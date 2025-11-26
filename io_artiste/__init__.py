@@ -8,7 +8,7 @@ bl_info = {
     "location": "Node Editor > STK RUNNER",
 }
 
-import bpy, os
+import bpy
 from .base import (node, menu, editor, NPanel_editor)
 from .node.mode import (
     battle_info, capture_flag_info,
@@ -16,7 +16,7 @@ from .node.mode import (
     soccer_info, time_trial)
 from .node.option import (cli, demo_info, graphic, initial_info, windows)
 from .node.run import (preview_info, runner)
-from .node.experimental import (egg_info)
+from .node.experimental import (egg_info, decimal, vec_decimal)
 from .node.debug import (controller, kart, other, track, graphique)
 
 classes = (
@@ -55,6 +55,8 @@ classes = (
     other.STK_debug_other,
     track.STK_debug_track,
     graphique.STK_debug_graphique,
+    decimal.Decimal,
+    vec_decimal.VecDecimal,
 )
 
 def add_stk_node_menu(self, context):

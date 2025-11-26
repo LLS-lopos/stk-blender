@@ -5,7 +5,7 @@ from ..node.mode import (
     soccer_info, time_trial)
 from ..node.option import (cli, demo_info, graphic, initial_info, windows)
 from ..node.run import (preview_info, runner)
-from ..node.experimental import (egg_info)
+from ..node.experimental import (egg_info, decimal, vec_decimal)
 from ..node.debug import (controller, kart, other, track, graphique)
 
 class STKmenu(bpy.types.Menu):
@@ -55,6 +55,8 @@ class STKexperimental(bpy.types.Menu):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
         layout.operator("node.add_node", text=egg_info.STK_egg_paty.bl_label).type = egg_info.STK_egg_paty.bl_idname
+        layout.operator("node.add_node", text=decimal.Decimal.bl_label).type = decimal.Decimal.bl_idname
+        layout.operator("node.add_node", text=vec_decimal.VecDecimal.bl_label).type = vec_decimal.VecDecimal.bl_idname
 
 class STKdebug(bpy.types.Menu):
     bl_idname = 'NODE_MT_STK_debug'
