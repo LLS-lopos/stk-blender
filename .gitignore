@@ -6,10 +6,3 @@
 
 tmp.py
 verify.py
-
-/io_artiste/*.md
-/io_artiste/info_local
-
-/io_supertuxkart_engine/moteur/eclairage
-/io_supertuxkart_engine/moteur/shaders
-/io_supertuxkart_engine/demo.py
