@@ -4,18 +4,14 @@ schema_version = "1.0.0"
 # Change the values according to your extension
 id = "io_antartica_scene"
 version = "4.0.0"
-name = "SuperTuxKart Runner"
-tagline = "Export various items to SuperTuxKart objects (karts, tracks, and materials)"
+name = "SuperTuxKart Exporter Tools"
+tagline = "Export items to SuperTuxKart (karts/tracks/materials)"
 maintainer = "Jean-Manuel Clemencon, Joerg Henrichs, Marianne Gagnon, Richard Qian"
 # Supported types: "add-on", "theme"
 type = "add-on"
 
 # # Optional: link to documentation, support, source files, etc
-website = [
-  "https://supertuxkart.net/Community",
-  "https://github.com/supertuxkart/stk-blender/issues",
-  "https://supertuxkart.net/Main_Page.html"
-]
+website = "https://supertuxkart.net/Main_Page.html"
 
 # # Optional: tag list defined by Blender and server, see:
 # # https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
