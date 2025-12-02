@@ -2,7 +2,7 @@ import bpy
 
 # création de l'éditeur de node
 class STKeditor(bpy.types.NodeTree):
-    bl_idname = "STKediteur"
+    bl_idname = "STK_editeur"
     bl_label = "STK RUNNER"
     bl_icon = "AUTO"
 
