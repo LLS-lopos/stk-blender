@@ -2,7 +2,7 @@ bl_info = {
     "name": "STK RUNNER",
     "author": "Ludérïck Le Saouter @LLS",
     "version": (1, 0),
-    "blender": (3, 6, 0),
+    "blender": (2, 90, 0),
     "category": "Node",
     "description": "éditeur orienté test d'actif pour SuperTuxKart",
     "location": "Node Editor > STK RUNNER",
@@ -26,10 +26,6 @@ classes = (
     menu.STKrun,
     menu.STKexperimental,
     menu.STKdebug,
-    NPanel_editor.STKpanel,
-    NPanel_editor.STK_modif_config,
-    NPanel_editor.STK_config_file1,
-    NPanel_editor.STK_config_file2,
     node.node,
     battle_info.STK_battle,
     capture_flag_info.STK_capture_flag,
@@ -57,26 +53,34 @@ classes = (
     graphique.STK_debug_graphique,
     decimal.Decimal,
     vec_decimal.VecDecimal,
+    NPanel_editor.STKpanel,
+    NPanel_editor.STK_modif_config,
+    NPanel_editor.STK_config_file1,
+    NPanel_editor.STK_config_file2,
 )
 
+
 def add_stk_node_menu(self, context):
-    if context.space_data.tree_type == editor.STKeditor.bl_idname:
-        self.layout.menu(menu.STKdebug.bl_idname)
-        self.layout.menu(menu.STKmenu.bl_idname)
-        self.layout.menu(menu.STKoption.bl_idname)
-        self.layout.menu(menu.STKrun.bl_idname)
-        self.layout.menu(menu.STKexperimental.bl_idname)
+    if context.space_data.tree_type != editor.STKeditor.bl_idname:
+        return
+    self.layout.menu(menu.STKdebug.bl_idname)
+    self.layout.menu(menu.STKmenu.bl_idname)
+    self.layout.menu(menu.STKoption.bl_idname)
+    self.layout.menu(menu.STKrun.bl_idname)
+    self.layout.menu(menu.STKexperimental.bl_idname)
         
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     bpy.types.NODE_MT_add.append(add_stk_node_menu)
+    bpy.app.handlers.depsgraph_update_post.append(editor.STKeditor.update_scene_handler)
 
 def unregister():
     bpy.types.NODE_MT_add.remove(add_stk_node_menu)
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+    bpy.app.handlers.depsgraph_update_post.remove(editor.STKeditor.update_scene_handler)
 
 if __name__ == "__main__":
     register()
