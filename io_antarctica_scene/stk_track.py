@@ -1102,8 +1102,6 @@ class TrackExport:
                 print("Deleting ", f)
                 os.remove(f)
 
-        blendfile_dir = os.path.dirname(bpy.data.filepath)
-
         if exportImages:
             for i,curr in enumerate(bpy.data.images):
                 try:
@@ -1111,9 +1109,9 @@ class TrackExport:
                         continue
 
                     abs_texture_path = bpy.path.abspath(curr.filepath)
-                    print('abs_texture_path', abs_texture_path, blendfile_dir)
-                    if bpy.path.is_subdir(abs_texture_path, blendfile_dir):
-                        shutil.copy(abs_texture_path, sPath)
+                    shutil.copy(abs_texture_path, sPath)
+                    print(f"Copy Texture {abs_texture_path} to {sPath}")
+                    self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
                 except:
                     traceback.print_exc(file=sys.stdout)
                     self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
