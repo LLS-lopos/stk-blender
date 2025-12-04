@@ -20,18 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import bpy, datetime, sys, os, shutil, traceback, math, platform
+import bpy, datetime, sys, os, shutil, traceback, math
 from bpy_extras.io_utils import ExportHelper
 from mathutils import *
 from . import stk_utils, stk_panel
-
-def getSlashOS():
-    slash = ""
-    if platform.system() == "Windows":
-        slash = "\\"
-    else:
-        slash = "/"
-    return str(slash)
 
 # ------------------------------------------------------------------------------
 # Save nitro emitter
@@ -651,8 +643,6 @@ def savescene_callback(self, context, sPath):
                     continue
 
                 abs_texture_path = bpy.path.abspath(curr.filepath)
-                #print('abs_texture_path', abs_texture_path, blendfile_dir)
-                #if bpy.path.is_subdir(abs_texture_path, blendfile_dir): shutil.copy(abs_texture_path, sPath)
                 shutil.copy(abs_texture_path, self.filepath)
                 print(f"Copy Texture {abs_texture_path} to {self.filepath}")
                 self.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + self.filepath)
@@ -686,14 +676,15 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
             self.report({'ERROR'}, "Please select the export path in the add-on preferences or quick exporter panel")
             return {'FINISHED'}
         
-        blend_filepath = context.blend_data.filepath
-        if blend_filepath:
-            blend_filepath = blend_filepath.split(getSlashOS())[-1].replace(".blend", "")
+        if 'name' not in context.scene or len(context.scene['name']) == 0:
+            self.report({'ERROR'}, "Please specify a name")
+            return {'FINISHED'}
+        code = context.scene['name']
         folder = os.path.join(assets_path, 'karts')
 
         if not os.path.exists(folder): 
             os.makedirs(folder, exist_ok=True)
-        self.filepath = os.path.join(folder, blend_filepath)
+        self.filepath = os.path.join(folder, code)
         if not os.path.exists(self.filepath): os.makedirs(self.filepath, exist_ok=True)
          
         return self.execute(context)
@@ -703,7 +694,7 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
             # Return to object mode before exporting
             bpy.ops.object.mode_set(mode='OBJECT')
 
-        if self.filepath == "":
+        if self.filepath == "" or 'is_stk_kart' not in context.scene or context.scene['is_stk_kart'] != 'true':
             return {'FINISHED'}
             
         savescene_callback(self, context, self.filepath)
@@ -711,8 +702,7 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
 
     @classmethod
     def poll(self, context):
-        if 'is_stk_kart' in context.scene and \
-        context.scene['is_stk_kart'] == 'true':
+        if 'is_stk_kart' in context.scene and context.scene['is_stk_kart'] == 'true':
             return True
         else:
             return False
