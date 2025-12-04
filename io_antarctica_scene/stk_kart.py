@@ -643,8 +643,6 @@ def savescene_callback(self, context, sPath):
                     continue
 
                 abs_texture_path = bpy.path.abspath(curr.filepath)
-                #print('abs_texture_path', abs_texture_path, blendfile_dir)
-                #if bpy.path.is_subdir(abs_texture_path, blendfile_dir): shutil.copy(abs_texture_path, sPath)
                 shutil.copy(abs_texture_path, self.filepath)
                 print(f"Copy Texture {abs_texture_path} to {self.filepath}")
                 self.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + self.filepath)
@@ -696,7 +694,7 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
             # Return to object mode before exporting
             bpy.ops.object.mode_set(mode='OBJECT')
 
-        if self.filepath == "":
+        if self.filepath == "" or 'is_stk_kart' not in context.scene or context.scene['is_stk_kart'] != 'true':
             return {'FINISHED'}
             
         savescene_callback(self, context, self.filepath)
@@ -704,8 +702,7 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
 
     @classmethod
     def poll(self, context):
-        if 'is_stk_kart' in context.scene and \
-        context.scene['is_stk_kart'] == 'true':
+        if 'is_stk_kart' in context.scene and context.scene['is_stk_kart'] == 'true':
             return True
         else:
             return False
