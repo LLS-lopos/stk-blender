@@ -1,5 +1,6 @@
 schema_version = "1.0.0"
 
+<<<<<<< HEAD
 # Example of manifest file for a Blender extension
 # Change the values according to your extension
 id = "io_antartica_scene"
@@ -24,11 +25,26 @@ blender_version_min = "4.2.0"
 
 # License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
 # https://docs.blender.org/manual/en/dev/advanced/extensions/licenses.html
+=======
+id = "io_antarctica_scene"
+version = "4.0.0"
+name = "SuperTuxKart Exporter Tools"
+tagline = "Export items to SuperTuxKart (karts/tracks/materials)"
+maintainer = "LLS"
+
+type = "add-on"
+website = "https://supertuxkart.net/Main_Page.html"
+tags = ["Import-Export"]
+
+blender_version_min = "2.80.0"
+# blender_version_max = "5.1.0"
+>>>>>>> extention-blender
 license = [
   "SPDX:MIT",
 ]
 # # Optional: required by some licenses.
 copyright = [
+<<<<<<< HEAD
    "2009-2020 SuperTuxKart-Team",
 ]
 
@@ -72,3 +88,11 @@ copyright = [
 #   "/.git/",
 #   "/*.zip",
 # ]
+=======
+   "2009-2025 SuperTuxKart-Team",
+   "Dev Jean-Manuel Clemencon",
+   "Dev Joerg Henrichs",
+   "Dev Marianne Gagnon",
+   "Dev Richard Qian",
+]
+>>>>>>> extention-blender
