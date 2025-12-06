@@ -356,7 +356,7 @@ class StkPanelAddonPreferences(bpy.types.AddonPreferences):
 
     stk_assets_path: bpy.props.StringProperty(
             name="Assets (data) path",
-            #subtype='DIR_PATH',
+            subtype='DIR_PATH',
             )
 
     stk_delete_old_files_on_export: bpy.props.BoolProperty(
@@ -373,7 +373,7 @@ class StkPanelAddonPreferences(bpy.types.AddonPreferences):
         layout = self.layout
         layout.label(text="The data folder contains folders named 'karts', 'tracks', 'textures', etc.")
         layout.prop(self, "stk_assets_path")
-        layout.operator('screen.stk_pick_assets_path', icon='FILEBROWSER', text="Select...")
+        #layout.operator('screen.stk_pick_assets_path', icon='FILEBROWSER', text="Select...")
         layout.prop(self, "stk_delete_old_files_on_export")
         layout.prop(self, "stk_export_images")
 
@@ -416,17 +416,14 @@ class STK_PT_Quick_Export_Panel(bpy.types.Panel):
 
         assets_path = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
 
-        if assets_path is not None and len(assets_path) > 0:
+        if len(assets_path) > 0:
             row.label(text='Assets (data) path: ' + assets_path)
         else:
             row.label(text='Assets (data) path: [please select path]')
         row.operator('screen.stk_pick_assets_path', icon='FILEBROWSER', text="")
 
-        if assets_path is None or len(assets_path) == 0:
+        if len(assets_path) == 0:
             return
-
-        # row = layout.row()
-        # row.prop(the_scene, 'stk_track_export_images', text="Copy texture files")
 
         row = layout.row()
         row.operator("screen.stk_kart_export", text="Export Kart", icon='AUTO')
@@ -436,6 +433,5 @@ class STK_PT_Quick_Export_Panel(bpy.types.Panel):
         else:
             row.operator("screen.stk_track_export", text="Export Library Node", icon='GROUP')
 
-        if (assets_path is None or len(assets_path) == 0) \
-            and bpy.context.mode != 'OBJECT':
+        if len(assets_path) == 0 and bpy.context.mode != 'OBJECT':
             row.enabled = False

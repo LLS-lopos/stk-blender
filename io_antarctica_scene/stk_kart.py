@@ -28,29 +28,22 @@ from . import stk_utils, stk_panel
 # ------------------------------------------------------------------------------
 # Save nitro emitter
 def saveNitroEmitter(self, f, lNitroEmitter, path):
-    if len(lNitroEmitter) > 2:
+    # check if there are 2 nitro emitter
+    if len(lNitroEmitter) != 2:
         self.report({'WARNING'}, " %d nitro emitter specified. Up to 2 are allowed." % len(lNitroEmitter))
         return
-    if len(lNitroEmitter) > 0:	
-	    f.write('  <nitro-emitter>\n')
-	    f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
-	            % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
-	    f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
-	            % (lNitroEmitter[1].location.x, lNitroEmitter[1].location.z, lNitroEmitter[1].location.y))
-	    f.write('  </nitro-emitter>\n')
-    #else:
-     #   f.write('  <nitro-emitter>\n')
-	  #  f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
-	   #         % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
-	    #f.write('  </nitro-emitter>\n')
-        
+    f.write('  <nitro-emitter>\n')
+    f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
+            % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
+    f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
+            % (lNitroEmitter[1].location.x, lNitroEmitter[1].location.z, lNitroEmitter[1].location.y))
+    f.write('  </nitro-emitter>\n')
 
 # ------------------------------------------------------------------------------
-
+# Save headlights if exist
 def saveHeadlights(self, f, lHeadlights, path, straight_frame):
     if len(lHeadlights) == 0:
         return
-
     f.write('  <headlights>\n')
     instancing_objects = {}
     for obj in lHeadlights:
@@ -114,7 +107,7 @@ def saveHeadlights(self, f, lHeadlights, path, straight_frame):
     f.write('  </headlights>\n')
 
 # ------------------------------------------------------------------------------
-# Save speed weighted
+# Save speed weighted if exist
 def saveSpeedWeighted(self, f, lSpeedWeighted, path, straight_frame):
     if len(lSpeedWeighted) == 0:
         return
@@ -170,12 +163,11 @@ def saveSpeedWeighted(self, f, lSpeedWeighted, path, straight_frame):
     f.write('  </speed-weighted-objects>\n')
 
 # ------------------------------------------------------------------------------
+# Save the wheels if 4 wheel exist
 def saveWheels(self, f, lWheels, path):
-    if len(lWheels) == 0:
-        return
-
-    if len(lWheels) > 4:
+    if len(lWheels) != 4:
         self.report({'WARNING'}, "%d wheels specified. Up to 4 are allowed." % len(lWheels))
+        return
 
     lWheelNames = ("wheel-front-right.spm", "wheel-front-left.spm",
                    "wheel-rear-right.spm",  "wheel-rear-left.spm"   )
@@ -434,23 +426,23 @@ def saveSounds(f, engine_sfx, skid_sound):
 def exportKart(self, path):
     kart_name_string = bpy.context.scene['name']
 
-    if not kart_name_string or len(kart_name_string) == 0:
+    if len(kart_name_string) == 0:  # check valid name
         self.report({'ERROR'}, "No kart name specified")
         return
 
     kart_version = bpy.context.scene['kart_version']
-    if ((kart_version != 3) and (kart_version != 4)):
+    if ((kart_version != 3) and (kart_version != 4)):  # check valid version kart
         self.report({'ERROR'}, "The kart.xml version is not specified or incorrect")
         return
 
     export_version = bpy.context.scene['export_version']
-    if ((export_version != 3) and (export_version != 4)):
+    if ((export_version != 3) and (export_version != 4)):   # check valid version kart export
         self.report({'ERROR'}, "The kart.xml export version is not specified or incorrect")
         return
 
     self.report({'INFO'}, "Kart designed as version " + str(kart_version) + " and exported as version " + str(export_version))
 
-    if (kart_version == 3):
+    if (kart_version == 3):  # encouraged the designer to update the method of creating karts
         self.report({'INFO'}, "Think of updating this kart to the v4 format!")
 
     color = bpy.context.scene['color']
@@ -484,22 +476,22 @@ def exportKart(self, path):
     for obj in lObj:
         stktype = stk_utils.getObjectProperty(obj, "type", "").strip().upper()
         name    = obj.name.upper()
-        if stktype=="WHEEL":
+        if stktype == "WHEEL":
             lWheels.append(obj)
-        elif stktype=="NITRO-EMITTER":
+        elif stktype == "NITRO-EMITTER":
             lNitroEmitter.append(obj)
-        elif stktype=="SPEED-WEIGHTED":
+        elif stktype == "SPEED-WEIGHTED":
             lSpeedWeighted.append(obj)
-        elif stktype=="IGNORE" or obj.hide_render:
+        elif stktype == "IGNORE": # or obj.hide_render:
             pass
-        elif stktype=="HEADLIGHT" or stktype=="AUTO-HEADLIGHT":
+        elif stktype == "HEADLIGHT" or stktype == "AUTO-HEADLIGHT":
             lHeadlights.append(obj)
-        elif stktype=="HAT":
+        elif stktype == "HAT":
             hat_object = obj
         else:
             # Due to limitations with the spm exporter animated
             # objects must be first in the list of objects to export:
-            if obj.parent and obj.parent.type=="Armature":
+            if obj.parent and obj.parent.type == "Armature":
                 lKart.insert(0, obj)
             else:
                 lKart.append(obj)
@@ -634,19 +626,16 @@ def savescene_callback(self, context, sPath):
 
     # Export the actual kart
     exportKart(self, sPath)
-
+    # check that "copy texture file ..." is checked in the scene property settings
     exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
     if exportImages:
         for i,curr in enumerate(bpy.data.images):
-            try:
-                if curr.filepath is None or len(curr.filepath) == 0:
-                    continue
-
-                abs_texture_path = bpy.path.abspath(curr.filepath)
-                shutil.copy(abs_texture_path, self.filepath)
+            try:  
+                if curr.filepath is None or len(curr.filepath) == 0:  continue # if texture in blender file
+                abs_texture_path = bpy.path.abspath(curr.filepath)  # check texture path
+                shutil.copy(abs_texture_path, self.filepath)  # copy texture to assets_path / karts / folder_kart
                 print(f"Copy Texture {abs_texture_path} to {self.filepath}")
                 self.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + self.filepath)
-                
             except:
                 traceback.print_exc(file=sys.stdout)
                 self.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
@@ -663,27 +652,28 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
 
     def invoke(self, context, event):
+        # check that "is a Supertuxkart kart" is checked in the scene property settings
         if 'is_stk_kart' not in context.scene or context.scene['is_stk_kart'] != 'true':
             self.report({'ERROR'}, "Not a STK kart!")
             return {'FINISHED'}
 
-        try:
+        try:  # check that assets_path exits
             assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
         except: 
             pass
         
-        if assets_path is None or len(assets_path) < 0:
+        if assets_path is None:
             self.report({'ERROR'}, "Please select the export path in the add-on preferences or quick exporter panel")
             return {'FINISHED'}
         
+        # check if kart name devined 
         if 'name' not in context.scene or len(context.scene['name']) == 0:
             self.report({'ERROR'}, "Please specify a name")
             return {'FINISHED'}
         code = context.scene['name']
         folder = os.path.join(assets_path, 'karts')
 
-        if not os.path.exists(folder): 
-            os.makedirs(folder, exist_ok=True)
+        if not os.path.exists(folder): os.makedirs(folder, exist_ok=True)
         self.filepath = os.path.join(folder, code)
         if not os.path.exists(self.filepath): os.makedirs(self.filepath, exist_ok=True)
          

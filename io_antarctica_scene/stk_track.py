@@ -1102,20 +1102,21 @@ class TrackExport:
                 print("Deleting ", f)
                 os.remove(f)
 
+        # check that "copy texture file ..." is checked in the scene property settings
+        exportImages = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
         if exportImages:
             for i,curr in enumerate(bpy.data.images):
                 try:
-                    if curr.filepath is None or len(curr.filepath) == 0:
+                    if curr.filepath is None or len(curr.filepath) == 0:  # if texture in blender file
                         continue
-
-                    abs_texture_path = bpy.path.abspath(curr.filepath)
-                    shutil.copy(abs_texture_path, sPath)
+                    abs_texture_path = bpy.path.abspath(curr.filepath)  # check texture path
+                    shutil.copy(abs_texture_path, sPath)  # copy texture to assets_path / karts / folder_kart
                     print(f"Copy Texture {abs_texture_path} to {sPath}")
-                    self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
+                    self.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
                 except:
                     traceback.print_exc(file=sys.stdout)
                     self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
-
+                        
         drivelineExporter = stk_track_utils.DrivelineExporter(self.log)
         navmeshExporter = stk_track_utils.NavmeshExporter(self.log)
         exporters = [drivelineExporter, stk_track_utils.ParticleEmitterExporter(self.log), stk_track_utils.BlenderHairExporter(self.log), stk_track_utils.SoundEmitterExporter(self.log),
@@ -1145,11 +1146,11 @@ class TrackExport:
             # This also works with objects that have hide_render enabled.
             # Do not export linked objects if part of the STK object library;
             # linked objects will be used as templates to create instances from.
-            if obj.hide_render or stktype == "IGNORE" or \
-            (obj.name.startswith("stklib_") and obj.library is not None):
+            #if obj.hide_render or stktype == "IGNORE" or \
+            if stktype == "IGNORE" or (obj.name.startswith("stklib_") and obj.library is not None):
                 continue
 
-            if stktype=="EASTEREGG":
+            if stktype == "EASTEREGG":
                 lEasterEggs.append(obj)
                 continue
 
@@ -1161,21 +1162,21 @@ class TrackExport:
             if objectProcessed:
                 continue
 
-            if obj.type=="LIGHT" and stktype == "SUN":
+            if obj.type in ["LIGHT", "SUN"]:
                 lSun.append(obj)
                 continue
-            elif obj.type=="CAMERA" and stktype == 'CUTSCENE_CAMERA':
+            elif obj.type in ["CAMERA", 'CUTSCENE_CAMERA']:
                 lObjects.append(obj)
                 continue
-            elif obj.type!="MESH":
+            elif obj.type != "MESH":
                 #print "Non-mesh object '%s' (type: '%s') is ignored!"%(obj.name, stktype)
                 continue
 
-            if stktype=="OBJECT" or stktype=="SPECIAL_OBJECT" or stktype=="LOD_MODEL" or stktype=="LOD_INSTANCE" or stktype=="SINGLE_LOD":
+            if stktype in ["OBJECT", "SPECIAL_OBJECT", "LOD_MODEL", "LOD_INSTANCE", "SINGLE_LOD"]:
                 lObjects.append(obj)
-            elif stktype=="CANNONEND":
+            elif stktype == "CANNONEND":
                 pass # cannon ends are handled with cannon start objects
-            elif stktype=="NONE":
+            elif stktype == "NONE":
                 lTrack.append(obj)
             else:
                 s = stk_utils.getObjectProperty(obj, "type", None)
@@ -1288,7 +1289,7 @@ class STK_Track_Export_Operator(bpy.types.Operator):
         except:
             pass
 
-        if assets_path is None or len(assets_path) < 0:
+        if assets_path is None:
             self.report({'ERROR'}, "Please select the export path in the add-on preferences or quick exporter panel")
             return {'FINISHED'}
 
@@ -1327,3 +1328,4 @@ class STK_Track_Export_Operator(bpy.types.Operator):
             return True
         else:
             return False
+        hide_render
