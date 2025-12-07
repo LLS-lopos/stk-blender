@@ -24,8 +24,13 @@
 bl_info = {
     "name": "SuperTuxKart Exporter Tools",
     "description": "Export various items to SuperTuxKart objects (karts, tracks, and materials)",
+<<<<<<< HEAD
     "author": "Jean-Manuel Clemencon, Joerg Henrichs, Marianne Gagnon, Richard Qian, Ludérïck Le Saouter @LLS",
     "version": (4,1),
+=======
+    "author": "Jean-Manuel Clemencon, Joerg Henrichs, Marianne Gagnon, Richard Qian, LLS",
+    "version": (4,0),
+>>>>>>> extention-blender
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
     "warning": '', # used for warning icon and text in addons panel
