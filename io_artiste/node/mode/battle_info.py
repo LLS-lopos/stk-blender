@@ -1,5 +1,7 @@
 import bpy
+
 from ...base.node import node
+
 
 class STK_battle(node):
     bl_idname = 'STK_Battle'
@@ -21,7 +23,7 @@ class STK_battle(node):
     num_kart_4: bpy.props.IntProperty(
         name="N_karts",
         default=3, min=1, max=4, update=lambda self, context: self.update())
-    
+
     choix_kart: bpy.props.EnumProperty(
         name="Kart User",
         description="Select a kart",
@@ -77,35 +79,37 @@ class STK_battle(node):
 
     def draw_buttons(self, context, layout):
         ligne = layout.row()
-        if self.choix_track in {"alien_signal", "ancient_colosseum_labyrinth", "arena_candela_city", "lasdunasarena", "pumpkin_park", "stadium", "temple"}:
+        if self.choix_track in {"alien_signal", "ancient_colosseum_labyrinth", "arena_candela_city", "lasdunasarena",
+                                "pumpkin_park", "stadium", "temple"}:
             ligne.prop(self, "num_kart_10")
-        elif self.choix_track in {"battleisland"}: ligne.prop(self, "num_kart_6")
-        elif self.choix_track in {"cave"}: ligne.prop(self, "num_kart_4")
-        else: ligne.prop(self, "num_kart_custom")
-        
-    
+        elif self.choix_track in {"battleisland"}:
+            ligne.prop(self, "num_kart_6")
+        elif self.choix_track in {"cave"}:
+            ligne.prop(self, "num_kart_4")
+        else:
+            ligne.prop(self, "num_kart_custom")
+
         ligne = layout.row()
         ligne.prop(self, "choix_track")
         if self.choix_track == "custom":
             ligne.prop(self, "custom_track")
-        
+
         ligne = layout.row()
         ligne.prop(self, "choix_kart")
         if self.choix_kart == "custom":
-            ligne.prop(self, "custom_kart") 
-        
+            ligne.prop(self, "custom_kart")
 
     def process(self, context, id, path):
         # Check for input socket existence
         if len(self.inputs) > 0:
             input_socket = self.inputs[0]
-            
+
             if input_socket.is_linked:
                 links = input_socket.links
                 if links:
                     from_socket = links[0].from_socket
                     from_node = links[0].from_node
-                    
+
                     # Try to get the value via the source node's process method first
                     if hasattr(from_node, "process"):
                         try:
@@ -113,24 +117,28 @@ class STK_battle(node):
                             self.entrer = str(value)
                         except:
                             pass
-                    
+
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
                         self.entrer = str(from_socket.default_value)
             else:
                 self.entrer = ""
-        
+
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
             self.sortie = ""
             if self.entrer != "":
                 self.sortie += self.entrer + " "
 
-            if self.choix_track in {"alien_signal", "ancient_colosseum_labyrinth", "arena_candela_city", "lasdunasarena", "pumpkin_park", "stadium", "temple"}:
+            if self.choix_track in {"alien_signal", "ancient_colosseum_labyrinth", "arena_candela_city",
+                                    "lasdunasarena", "pumpkin_park", "stadium", "temple"}:
                 self.sortie += f"--numkarts={self.num_kart_10}"
-            elif self.choix_track in {"battleisland"}: self.sortie += f"--numkarts={self.num_kart_6}"
-            elif self.choix_track in {"cave"}: self.sortie += f"--numkarts={self.num_kart_4}"
-            else: self.sortie += f"--numkarts={self.num_kart_custom}"
+            elif self.choix_track in {"battleisland"}:
+                self.sortie += f"--numkarts={self.num_kart_6}"
+            elif self.choix_track in {"cave"}:
+                self.sortie += f"--numkarts={self.num_kart_4}"
+            else:
+                self.sortie += f"--numkarts={self.num_kart_custom}"
 
             if self.choix_track != "custom":
                 self.sortie += f" --track={self.choix_track}"

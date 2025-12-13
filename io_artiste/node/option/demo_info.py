@@ -1,5 +1,7 @@
 import bpy
+
 from ...base.node import node
+
 
 class STK_demo_mode(node):
     bl_idname = 'STK_mode_demo'
@@ -28,13 +30,13 @@ class STK_demo_mode(node):
         # Check for input socket existence
         if len(self.inputs) > 0:
             input_socket = self.inputs[0]
-            
+
             if input_socket.is_linked:
                 links = input_socket.links
                 if links:
                     from_socket = links[0].from_socket
                     from_node = links[0].from_node
-                    
+
                     # Try to get the value via the source node's process method first
                     if hasattr(from_node, "process"):
                         try:
@@ -42,13 +44,13 @@ class STK_demo_mode(node):
                             self.entrer = str(value)
                         except:
                             pass
-                    
+
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
                         self.entrer = str(from_socket.default_value)
             else:
                 self.entrer = ""
-        
+
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
             instruction = ""
@@ -57,7 +59,7 @@ class STK_demo_mode(node):
             instruction += f"--demo-mode={self.times} --demo-tracks={self.tracks} --demo-laps={self.laps} --demo-karts={self.karts}"
             self.outputs[0].default_value = instruction
             return instruction
-        
+
         return self.entrer
 
     def update(self):

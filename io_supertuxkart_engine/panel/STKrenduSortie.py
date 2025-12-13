@@ -1,5 +1,8 @@
 import bpy
 
+from ..moteur.AntarcticaRenderEngine import AntarcticaRenderEngine
+
+
 class STKsortiePanel(bpy.types.Panel):
     bl_idname = "STK_PT_sortie"
     bl_label = "sortie"
@@ -10,7 +13,7 @@ class STKsortiePanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.scene.render.engine == "STKRENDER")
+        return (context.scene.render.engine == AntarcticaRenderEngine.bl_idname)
 
     def draw_header(self, context):
         layout = self.layout
@@ -29,7 +32,7 @@ class STKsortiePanel(bpy.types.Panel):
         # Format de sortie
         box.prop(rd, "use_file_extension", text="Utiliser l'extension de fichier")
         box.prop(rd, "filepath", text="")
-        
+
         # Afficher les options spécifiques au format sélectionné
         if rd.image_settings.file_format in {'PNG', 'BMP', 'TARGA'}:
             box.prop(rd.image_settings, "color_mode", text="Couleur")
@@ -39,8 +42,7 @@ class STKsortiePanel(bpy.types.Panel):
             box.prop(rd.image_settings, "quality")
             if rd.image_settings.file_format == 'JPEG2000':
                 box.prop(rd.image_settings, "jpeg2k_codec")
-        
-        
+
 
 class STKfomatPanel(bpy.types.Panel):
     bl_idname = "STK_PT_format_panel"
@@ -49,6 +51,10 @@ class STKfomatPanel(bpy.types.Panel):
     bl_region_type = 'WINDOW'
     bl_context = "output"
     bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return (context.scene.render.engine == AntarcticaRenderEngine.bl_idname)
 
     def draw_header(self, context):
         layout = self.layout
@@ -61,16 +67,17 @@ class STKfomatPanel(bpy.types.Panel):
 
         box = layout.box()
         box.label(text="Format de sortie")
-        
+
         # Résolution
         col = box.column(align=True)
         col.prop(rd, "resolution_x", text="RésolutionX largeur")
         col.prop(rd, "resolution_y", text="RésolutionY hauteur")
         col.prop(rd, "resolution_percentage", text="%")
-        
+
         # Format de l'image
         box.prop(rd, "pixel_aspect_x", text="Ratio X")
         box.prop(rd, "pixel_aspect_y", text="Ratio Y")
+
 
 class STKframePanel(bpy.types.Panel):
     bl_idname = "STK_PT_frame_panel"
@@ -79,6 +86,10 @@ class STKframePanel(bpy.types.Panel):
     bl_region_type = 'WINDOW'
     bl_context = "output"
     bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return (context.scene.render.engine == AntarcticaRenderEngine.bl_idname)
 
     def draw_header(self, context):
         layout = self.layout

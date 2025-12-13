@@ -20,9 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import bpy, sys, os, struct, math, string, mathutils, bmesh, time
+import bmesh
+import bpy
+import mathutils
+import os
+import struct
+import time
 
 spm_version = 1
+
 
 def get_fcurves(anim_data):
     if not anim_data:
@@ -34,40 +40,48 @@ def get_fcurves(anim_data):
     else:
         if hasattr(anim_data, "action") and anim_data.action:
             if (hasattr(anim_data.action, "layers") and anim_data.action.layers and
-                hasattr(anim_data.action.layers[0], "strips") and anim_data.action.layers[0].strips and
-                hasattr(anim_data.action.layers[0].strips[0], "channelbags") and
-                anim_data.action.layers[0].strips[0].channelbags):
+                    hasattr(anim_data.action.layers[0], "strips") and anim_data.action.layers[0].strips and
+                    hasattr(anim_data.action.layers[0].strips[0], "channelbags") and
+                    anim_data.action.layers[0].strips[0].channelbags):
 
                 channelbag = anim_data.action.layers[0].strips[0].channelbags[0]
                 if hasattr(channelbag, "fcurves"):
                     return channelbag.fcurves
     return None
 
+
 # Helper Functions
 def writeFloat(value1):
     return struct.pack("<f", value1)
 
+
 def writeInt(value1):
     return struct.pack("<i", value1)
 
+
 def writeUint(value1):
     return struct.pack("<I", value1)
+
 
 def writeInt16(value1):
     assert value1 > -32769
     assert value1 < 32768
     return struct.pack("<h", value1)
 
+
 def writeUint16(value1):
     assert value1 < 65536
     return struct.pack("<H", value1)
+
 
 def writeUint8(value1):
     assert value1 < 256
     return struct.pack("<B", value1)
 
+
 def writeHalfFloat(float32):
     return struct.pack("<e", float32)
+
 
 def write2101010Rev(vector3):
     part = 0
@@ -104,6 +118,7 @@ def write2101010Rev(vector3):
     ret |= (part & 3) << 30
     return writeUint(ret)
 
+
 def writeLenString(value):
     encoded = str.encode(value)
     if len(encoded) > 255:
@@ -114,10 +129,12 @@ def writeLenString(value):
     tmp_buf += struct.pack(bin, encoded)
     return tmp_buf
 
+
 def writeMatrixAsLocRotScale(mat):
     loc, rot, scale = mat.decompose()
     rot.normalize()
     return struct.pack('<ffffffffff', *loc.xzy, -rot.x, -rot.z, -rot.y, rot.w, *scale.xzy)
+
 
 def getUniqueFrame(armature, keyframe_only):
     unique_frame = []
@@ -147,7 +164,7 @@ def getUniqueFrame(armature, keyframe_only):
                                 if global_key > max_frame:
                                     global_key = int(nla_strip.frame_start)
                                 global_key = 1 if global_key == 0 else global_key
-                                #print('f: {} {} {}'.format(nla_strip.name, nla_strip.frame_start, keyframe.co[0]))
+                                # print('f: {} {} {}'.format(nla_strip.name, nla_strip.frame_start, keyframe.co[0]))
                                 if not global_key in unique_frame:
                                     unique_frame.append(global_key)
 
@@ -161,34 +178,34 @@ def getUniqueFrame(armature, keyframe_only):
                             for modifier in curve.modifiers:
                                 if modifier.frame_start > 0 and modifier.frame_end > 0:
                                     for f in range(int(modifier.frame_start), int(modifier.frame_end + 1)):
-                                        #print('{} {}'.format(f, modifier.type))
+                                        # print('{} {}'.format(f, modifier.type))
                                         if not f in unique_frame:
                                             unique_frame.append(f)
-                            #print('{}'.format(constraint.name))
+                            # print('{}'.format(constraint.name))
                             for keyframe in curve.keyframe_points:
                                 if keyframe.co[0] < 0:
                                     continue
                                 global_key = int(keyframe.co[0])
                                 global_key = 1 if global_key == 0 else global_key
-                                #print('f: {} {}'.format(global_key, constraint.target.name))
+                                # print('f: {} {}'.format(global_key, constraint.target.name))
                                 if not global_key in unique_frame:
-                                    #bpy.context.scene.frame_set(global_key)
-                                    #bpy.context.scene.frame_current = global_key
-                                    #armature.update_tag(refresh={'OBJECT', 'DATA'})
-                                    #bpy.context.scene.update()
-                                    #if constraint.influence == 0.0:
-                                        #print('unused')
-                                        #continue
+                                    # bpy.context.scene.frame_set(global_key)
+                                    # bpy.context.scene.frame_current = global_key
+                                    # armature.update_tag(refresh={'OBJECT', 'DATA'})
+                                    # bpy.context.scene.update()
+                                    # if constraint.influence == 0.0:
+                                    # print('unused')
+                                    # continue
                                     unique_frame.append(global_key)
                 except (AttributeError) as e:
                     pass
 
     if len(unique_frame) == 0:
         print('No keyframes found for armature: {},'
-        ' please remove the armature if it contains no keyframe.'.format(armature.name))
+              ' please remove the armature if it contains no keyframe.'.format(armature.name))
         return None
     unique_frame.sort()
-    #for frame in unique_frame:
+    # for frame in unique_frame:
     #    print('unique_frame:{} {}'.format(frame, armature.name))
     if keyframe_only == False:
         first = bpy.context.scene.frame_start
@@ -196,12 +213,14 @@ def getUniqueFrame(armature, keyframe_only):
         unique_frame = []
         for frame in range(first, last + 1):
             unique_frame.append(frame)
-        #for frame in unique_frame:
+        # for frame in unique_frame:
         #    print('unique_frame:{} {}'.format(frame, armature.name))
     return unique_frame
 
+
 def equals(float1, float2):
     return (float1 + 0.0001 >= float2) and (float1 - 0.0001 <= float2)
+
 
 def vectorEquals(vec1, vec2):
     if vec1 is None and vec2 is None:
@@ -209,6 +228,7 @@ def vectorEquals(vec1, vec2):
     if len(vec1) != len(vec2):
         raise Exception("Vector length is different")
     return all(equals(v1, v2) for v1, v2 in zip(vec1, vec2))
+
 
 class ExportArm:
     m_accumulated_bone = 0
@@ -253,7 +273,7 @@ class ExportArm:
     def buildLocalId(self):
         for k, v in self.m_bone_names.items():
             self.m_bone_local_id.append([k, v])
-        self.m_bone_local_id.sort(key = lambda x: x[1])
+        self.m_bone_local_id.sort(key=lambda x: x[1])
         unused_bone = 0
         for bone_tu in self.m_bone_local_id:
             if bone_tu[1] != ExportArm.NEW_BONE:
@@ -262,10 +282,10 @@ class ExportArm:
             else:
                 bone_tu[1] = self.m_bone_in_use + unused_bone
                 unused_bone += 1
-        #print(self.m_bone_names)
-        #print(unused_bone)
-        #print(self.m_bone_in_use)
-        #print(self.m_bone_local_id)
+        # print(self.m_bone_names)
+        # print(unused_bone)
+        # print(self.m_bone_in_use)
+        # print(self.m_bone_local_id)
 
     def getBone(self, bone_id):
         for k, v in self.m_bone_names.items():
@@ -274,48 +294,49 @@ class ExportArm:
         return None
 
     def writeArmature(self):
-            tmp_buf = bytearray()
-            tmp_buf += writeUint16(self.m_bone_in_use)
-            tmp_buf += writeUint16(len(self.m_arm.data.bones))
+        tmp_buf = bytearray()
+        tmp_buf += writeUint16(self.m_bone_in_use)
+        tmp_buf += writeUint16(len(self.m_arm.data.bones))
 
-            assert len(self.m_bone_local_id) == len(self.m_arm.data.bones)
-            for bone_tu in self.m_bone_local_id:
-                bone = self.m_arm.data.bones[bone_tu[0]]
-                tmp_buf += writeLenString(bone_tu[0])
-            for bone_tu in self.m_bone_local_id:
-                bone = self.m_arm.data.bones[bone_tu[0]]
-                bone_inv = bone.matrix_local.inverted_safe() @ self.m_real_inv_matrix
-                tmp_buf += writeMatrixAsLocRotScale(bone_inv)
+        assert len(self.m_bone_local_id) == len(self.m_arm.data.bones)
+        for bone_tu in self.m_bone_local_id:
+            bone = self.m_arm.data.bones[bone_tu[0]]
+            tmp_buf += writeLenString(bone_tu[0])
+        for bone_tu in self.m_bone_local_id:
+            bone = self.m_arm.data.bones[bone_tu[0]]
+            bone_inv = bone.matrix_local.inverted_safe() @ self.m_real_inv_matrix
+            tmp_buf += writeMatrixAsLocRotScale(bone_inv)
 
-            local_id_dict = {}
-            for bone_pair in self.m_bone_local_id:
-                local_id_dict[bone_pair[0]] = bone_pair[1]
+        local_id_dict = {}
+        for bone_pair in self.m_bone_local_id:
+            local_id_dict[bone_pair[0]] = bone_pair[1]
 
-            assert len(self.m_arm.pose.bones) == len(local_id_dict)
+        assert len(self.m_arm.pose.bones) == len(local_id_dict)
+        for bone_tu in self.m_bone_local_id:
+            pose_bone = self.m_arm.pose.bones[bone_tu[0]]
+            if pose_bone.parent:
+                tmp_buf += writeInt16(local_id_dict[pose_bone.parent.name])
+            else:
+                tmp_buf += writeInt16(-1)
+
+        unique_frame = getUniqueFrame(self.m_arm, self.m_keyframe_only)
+        if unique_frame is None:
+            return None
+
+        tmp_buf += writeUint16(len(unique_frame))
+        for frame in unique_frame:
+            bpy.context.scene.frame_set(frame)
+            tmp_buf += writeUint16(frame - 1)
             for bone_tu in self.m_bone_local_id:
                 pose_bone = self.m_arm.pose.bones[bone_tu[0]]
                 if pose_bone.parent:
-                    tmp_buf += writeInt16(local_id_dict[pose_bone.parent.name])
+                    bone_mat = pose_bone.parent.matrix.inverted_safe() @ pose_bone.matrix
                 else:
-                    tmp_buf += writeInt16(-1)
+                    bone_mat = self.m_real_matrix @ pose_bone.matrix
+                tmp_buf += writeMatrixAsLocRotScale(bone_mat)
+        self.m_arm.data.pose_position = self.m_original_pose_position
+        return tmp_buf
 
-            unique_frame = getUniqueFrame(self.m_arm, self.m_keyframe_only)
-            if unique_frame is None:
-                return None
-
-            tmp_buf += writeUint16(len(unique_frame))
-            for frame in unique_frame:
-                bpy.context.scene.frame_set(frame)
-                tmp_buf += writeUint16(frame - 1)
-                for bone_tu in self.m_bone_local_id:
-                    pose_bone = self.m_arm.pose.bones[bone_tu[0]]
-                    if pose_bone.parent:
-                        bone_mat = pose_bone.parent.matrix.inverted_safe() @ pose_bone.matrix
-                    else:
-                        bone_mat = self.m_real_matrix @ pose_bone.matrix
-                    tmp_buf += writeMatrixAsLocRotScale(bone_mat)
-            self.m_arm.data.pose_position = self.m_original_pose_position
-            return tmp_buf
 
 class Vertex:
     def __init__(self):
@@ -329,10 +350,11 @@ class Vertex:
         self.m_weights = [0.0, 0.0, 0.0, 0.0]
 
     def __hash__(self):
-        def roundTuple(data, decimals = 3):
+        def roundTuple(data, decimals=3):
             if data is None:
                 return ()
             return tuple(round(x, decimals) for x in data)
+
         return hash((
             roundTuple(self.m_position),
             roundTuple(self.m_normal),
@@ -346,13 +368,13 @@ class Vertex:
         if not isinstance(other, Vertex):
             return NotImplemented
         return (
-            vectorEquals(self.m_position, other.m_position) and
-            vectorEquals(self.m_normal, other.m_normal) and
-            self.m_color == other.m_color and
-            vectorEquals(self.m_all_uvs, other.m_all_uvs) and
-            vectorEquals(self.m_tangent, other.m_tangent) and
-            self.m_joints == other.m_joints and
-            vectorEquals(self.m_weights, other.m_weights)
+                vectorEquals(self.m_position, other.m_position) and
+                vectorEquals(self.m_normal, other.m_normal) and
+                self.m_color == other.m_color and
+                vectorEquals(self.m_all_uvs, other.m_all_uvs) and
+                vectorEquals(self.m_tangent, other.m_tangent) and
+                self.m_joints == other.m_joints and
+                vectorEquals(self.m_weights, other.m_weights)
         )
 
     def writeVertex(self, export_normal, uv_1, uv_2, vcolor, arm_dict, need_export_tangent):
@@ -389,8 +411,8 @@ class Vertex:
                 out_vector.normalize()
             tmp_buf += write2101010Rev(out_vector.xzy)
         if vcolor:
-            if self.m_color[0] == 255 and self.m_color[1] == 255 and\
-            self.m_color[2] == 255:
+            if self.m_color[0] == 255 and self.m_color[1] == 255 and \
+                    self.m_color[2] == 255:
                 tmp_buf += writeUint8(128)
             else:
                 tmp_buf += writeUint8(255)
@@ -423,6 +445,7 @@ class Vertex:
             tmp_buf += writeHalfFloat(self.m_weights[3])
         return tmp_buf
 
+
 class Triangle:
     def __init__(self):
         self.m_vertices = None
@@ -435,6 +458,7 @@ class Triangle:
         for v in self.m_vertices:
             v.m_joints = None
             v.m_weights = None
+
 
 def searchMaterialForImage(material, uv_num):
     # Check if there is a material
@@ -467,6 +491,7 @@ def searchMaterialForImage(material, uv_num):
     else:
         return ""
 
+
 # ==== Write SPM File ====
 # (main exporter function)
 def writeSPMFile(filename, spm_parameters={}):
@@ -490,8 +515,8 @@ def writeSPMFile(filename, spm_parameters={}):
     arm_count = 0
     arm_dict = {}
     all_triangles = []
-    static_mesh_frame = spm_parameters.get("static-mesh-frame")\
-    if spm_parameters.get("static-mesh-frame") > 0 else bpy.context.scene.frame_start
+    static_mesh_frame = spm_parameters.get("static-mesh-frame") \
+        if spm_parameters.get("static-mesh-frame") > 0 else bpy.context.scene.frame_start
     if static_mesh_frame < 1:
         print("static_mesh_frame is less than 1, changing it")
         static_mesh_frame = 1
@@ -525,9 +550,9 @@ def writeSPMFile(filename, spm_parameters={}):
 
         bm = bmesh.new()
         bm.from_mesh(mesh)
-        bmesh.ops.transform(bm, matrix = exported_matrix, verts = bm.verts)
+        bmesh.ops.transform(bm, matrix=exported_matrix, verts=bm.verts)
         if need_export_tangent:
-            bmesh.ops.triangulate(bm, faces = bm.faces)
+            bmesh.ops.triangulate(bm, faces=bm.faces)
         bm.to_mesh(mesh)
         bm.free()
 
@@ -539,7 +564,7 @@ def writeSPMFile(filename, spm_parameters={}):
             if len(mesh.uv_layers) >= 1:
                 # Use smooth normals to calcuate tangents, this makes blender >= 4.1 export .spm with similar file size
                 if bpy.app.version >= (4, 1, 0):
-                    mesh.set_sharp_from_angle(angle = 3.14159)
+                    mesh.set_sharp_from_angle(angle=3.14159)
                 mesh.calc_tangents()
                 all_no_tangents = False
                 no_tangents = False
@@ -610,7 +635,7 @@ def writeSPMFile(filename, spm_parameters={}):
                 if arm_count != 0:
                     for group in mesh.vertices[v].groups:
                         each_joint_data.append((obj.vertex_groups[group.group].name, group.weight))
-                    each_joint_data.sort(key = lambda x: x[1], reverse = True)
+                    each_joint_data.sort(key=lambda x: x[1], reverse=True)
 
                 spm_vertex = Vertex()
                 spm_vertex.m_position = vertices
@@ -666,7 +691,7 @@ def writeSPMFile(filename, spm_parameters={}):
             t.removeJointsData()
 
     assert len(all_triangles) > 0
-    all_triangles.sort(key = lambda x: x.m_texture_cmp)
+    all_triangles.sort(key=lambda x: x.m_texture_cmp)
     spm_buffer = bytearray()
 
     # SP header
@@ -703,7 +728,7 @@ def writeSPMFile(filename, spm_parameters={}):
             texture_list.append(triangle.m_texture_two)
     material_count = len(texture_list) >> 1
     spm_buffer += writeUint16(material_count)
-    #print(material_count)
+    # print(material_count)
     for texture_name in texture_list:
         spm_buffer += writeLenString(texture_name)
 
@@ -722,21 +747,21 @@ def writeSPMFile(filename, spm_parameters={}):
         bpy.context.scene.frame_set(static_mesh_frame)
     for t_idx in range(0, len(all_triangles) + 1):
         cur_cmp = all_triangles[t_idx].m_texture_cmp \
-        if t_idx < len(all_triangles) else None
+            if t_idx < len(all_triangles) else None
         if cur_cmp != tex_cmp or len(vertices) > 65532:
             tex_cmp = cur_cmp
             vbo_ibo += writeUint(len(vertices))
             vbo_ibo += writeUint(len(indices))
             vbo_ibo += writeUint16(material_count)
-            #print(len(vertices))
-            #print(len(indices))
+            # print(len(vertices))
+            # print(len(indices))
             assert len(vertices) < 65536
             for vertex in vertices:
-                vbo_ibo += vertex.writeVertex(export_normal,\
-                all_triangles[t_idx -1].m_texture_one != "",\
-                all_triangles[t_idx -1].m_texture_two != "",\
-                export_vcolor, None if arm_count == 0 else arm_dict,\
-                need_export_tangent)
+                vbo_ibo += vertex.writeVertex(export_normal, \
+                                              all_triangles[t_idx - 1].m_texture_one != "", \
+                                              all_triangles[t_idx - 1].m_texture_two != "", \
+                                              export_vcolor, None if arm_count == 0 else arm_dict, \
+                                              need_export_tangent)
             for index in indices:
                 if len(vertices) > 255:
                     vbo_ibo += writeUint16(index)
@@ -771,7 +796,7 @@ def writeSPMFile(filename, spm_parameters={}):
             if armature is not None:
                 spm_buffer += armature
 
-    spm = open(filename,'wb')
+    spm = open(filename, 'wb')
     spm.write(spm_buffer)
     spm.close()
 

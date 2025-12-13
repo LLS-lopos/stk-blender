@@ -1,5 +1,6 @@
 import bpy
 
+
 # création de l'éditeur de node
 class STKeditor(bpy.types.NodeTree):
     bl_idname = "STK_editeur"
@@ -26,5 +27,7 @@ class STKeditor(bpy.types.NodeTree):
                     if space.type == 'NODE_EDITOR':
                         tree = getattr(space, "node_tree", None) or getattr(space, "edit_tree", None)
                         if tree and getattr(tree, "bl_idname", "") == STKeditor.bl_idname:
-                            try: tree.update()
-                            except Exception: pass
+                            try:
+                                tree.update()
+                            except Exception:
+                                pass

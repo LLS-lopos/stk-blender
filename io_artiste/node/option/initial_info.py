@@ -1,5 +1,7 @@
-import bpy, os
+import bpy
+
 from ...base.node import node
+
 
 class STK_initial(node):
     bl_idname = 'STK_Initialisation'
@@ -14,40 +16,40 @@ class STK_initial(node):
         description="Use super-user rights to launch STK",
         default=False,
         update=lambda self, context: self.update())
-    
+
     password: bpy.props.StringProperty(
         name="Password",
         description="Password for sudo command",
         subtype='PASSWORD',
         default="",
         update=lambda self, context: self.update())
-    
+
     executable_game: bpy.props.StringProperty(
-            name="Executable (supertuxkart) path",
-            subtype='FILE_PATH',
-            update=lambda self, context: self.update())
-        
+        name="Executable (supertuxkart) path",
+        subtype='FILE_PATH',
+        update=lambda self, context: self.update())
+
     track_path: bpy.props.StringProperty(
-            name="Track (data) path",
-            subtype='DIR_PATH',
-            update=lambda self, context: self.update())
+        name="Track (data) path",
+        subtype='DIR_PATH',
+        update=lambda self, context: self.update())
     kart_path: bpy.props.StringProperty(
-            name="Kart (data) path",
-            subtype='DIR_PATH',
-            update=lambda self, context: self.update())
-    
+        name="Kart (data) path",
+        subtype='DIR_PATH',
+        update=lambda self, context: self.update())
+
     disable_addon_tracks: bpy.props.BoolProperty(
         name="Disable addon tracks",
         description="",
         default=False,
         update=lambda self, context: self.update())
-    
+
     disable_addon_karts: bpy.props.BoolProperty(
         name="Disable addon karts",
         description="",
         default=False,
         update=lambda self, context: self.update())
-    
+
     difficulty: bpy.props.EnumProperty(
         name="Difficulty",
         items=[
@@ -63,7 +65,7 @@ class STK_initial(node):
     # Node initialization
     def init(self, context):
         print("Node STK_initial initialization")
-        
+
         # Create the output
         self.supr_node_sortie("List")
         self.node_sortie('NodeSocketString', 'List', 'liste', "")
@@ -134,7 +136,7 @@ class STK_Pick_Executable_Operator(bpy.types.Operator):
                     node.executable_game = self.filepath
                     node.update()
                     return {'FINISHED'}
-        
+
         self.report({'ERROR'}, "Node not found")
         return {'CANCELLED'}
 

@@ -1,5 +1,7 @@
 import bpy
+
 from ...base.node import node
+
 
 class STK_info(node):
     bl_idname = 'STK_Info'
@@ -26,13 +28,13 @@ class STK_info(node):
 
     def process(self, context, id, path):
         input_socket = self.inputs[0]
-        
+
         if input_socket.is_linked:
             links = input_socket.links
             if links:
                 from_socket = links[0].from_socket
                 from_node = links[0].from_node
-                
+
                 # Try to get the value via the source node's process method first
                 if hasattr(from_node, "process"):
                     try:
@@ -41,12 +43,12 @@ class STK_info(node):
                         return self.doc
                     except:
                         pass
-                
+
                 # If that fails, try to get the default_value
                 if hasattr(from_socket, "default_value"):
                     self.doc = str(from_socket.default_value)
                     return self.doc
-        
+
         # If no connection or retrieval fails, use the default value
         self.doc = str(input_socket.default_value)
         return self.doc
@@ -60,7 +62,7 @@ class STK_info(node):
 
         for word in words:
             word_length = len(word)
-            
+
             # Check if adding the word exceeds the character or word limit
             if current_length + word_length + len(current_line) > 70 or len(current_line) >= 8:
                 formatted_lines.append(' '.join(current_line))
@@ -75,7 +77,7 @@ class STK_info(node):
             formatted_lines.append(' '.join(current_line))
 
         return '\n'.join(formatted_lines)
-    
+
     def update(self):
         """Called when the node needs to be updated"""
         self.process(bpy.context, None, None)

@@ -9,15 +9,16 @@ bl_info = {
 }
 
 import bpy
+
 from .base import (node, menu, editor, NPanel_editor)
+from .node.debug import (controller, kart, other, track, graphique)
+from .node.experimental import (egg_info, decimal, vec_decimal)
 from .node.mode import (
     battle_info, capture_flag_info,
     cutscene_info, leader_info, race_info,
     soccer_info, time_trial)
 from .node.option import (cli, demo_info, graphic, initial_info, windows)
 from .node.run import (preview_info, runner)
-from .node.experimental import (egg_info, decimal, vec_decimal)
-from .node.debug import (controller, kart, other, track, graphique)
 
 classes = (
     editor.STKeditor,
@@ -68,7 +69,7 @@ def add_stk_node_menu(self, context):
     self.layout.menu(menu.STKoption.bl_idname)
     self.layout.menu(menu.STKrun.bl_idname)
     self.layout.menu(menu.STKexperimental.bl_idname)
-        
+
 
 def register():
     for cls in classes:
@@ -76,11 +77,12 @@ def register():
     bpy.types.NODE_MT_add.append(add_stk_node_menu)
     bpy.app.handlers.depsgraph_update_post.append(editor.STKeditor.update_scene_handler)
 
+
 def unregister():
     bpy.types.NODE_MT_add.remove(add_stk_node_menu)
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
-    bpy.app.handlers.depsgraph_update_post.remove(editor.STKeditor.update_scene_handler)
+
 
 if __name__ == "__main__":
     register()

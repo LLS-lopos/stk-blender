@@ -24,22 +24,18 @@
 bl_info = {
     "name": "SuperTuxKart Exporter Tools",
     "description": "Export various items to SuperTuxKart objects (karts, tracks, and materials)",
-<<<<<<< HEAD
-    "author": "Jean-Manuel Clemencon, Joerg Henrichs, Marianne Gagnon, Richard Qian, Ludérïck Le Saouter @LLS",
-    "version": (4,1),
-=======
     "author": "Jean-Manuel Clemencon, Joerg Henrichs, Marianne Gagnon, Richard Qian, LLS",
-    "version": (4,0),
->>>>>>> extention-blender
+    "version": (4, 0),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
-    "warning": '', # used for warning icon and text in addons panel
+    "warning": '',  # used for warning icon and text in addons panel
     "wiki_url": "https://supertuxkart.net/Community",
     "tracker_url": "https://github.com/supertuxkart/stk-blender/issues",
     "category": "Import-Export"}
 
 if "bpy" in locals():
     import importlib
+
     if "stk_utils" in locals():
         importlib.reload(stk_utils)
     if "stk_panel" in locals():
@@ -53,22 +49,26 @@ if "bpy" in locals():
 else:
     from . import stk_utils, stk_panel, stk_material, stk_kart, stk_track
 
-import bpy, bpy_extras, os
+import bpy
+
 
 # Define export buttons for 3D View header menu
 def header_func_export_stk_kart(self, context):
     self.layout.operator(stk_kart.STK_Kart_Export_Operator.bl_idname, text="Export STK Kart")
 
+
 def header_func_export_stk_track(self, context):
     self.layout.operator(stk_track.STK_Track_Export_Operator.bl_idname, text="Export STK Track")
-    
-  
+
+
 # Define export buttons for File -> Export menu
 def menu_func_export_stk_material(self, context):
     self.layout.operator(stk_material.STK_Material_Export_Operator.bl_idname, text="STK Materials")
 
+
 def menu_func_export_stk_kart(self, context):
     self.layout.operator(stk_kart.STK_Kart_Export_Operator.bl_idname, text="STK Kart")
+
 
 def menu_func_export_stk_track(self, context):
     self.layout.operator(stk_track.STK_Track_Export_Operator.bl_idname, text="STK Track")
@@ -77,6 +77,7 @@ def menu_func_export_stk_track(self, context):
 # Define custom STK object submenu for 3D View -> Add menu
 def menu_func_add_stk_object(self, context):
     self.layout.operator_menu_enum("scene.stk_add_object", property="value", text="STK", icon='AUTO')
+
 
 classes = (
     stk_panel.STK_TypeUnset,
@@ -95,6 +96,7 @@ classes = (
     stk_track.STK_Track_Export_Operator,
 )
 
+
 def register_properties():
     bpy.types.Scene.stk_runner = bpy.props.StringProperty(
         name="STK Executable Path",
@@ -102,31 +104,33 @@ def register_properties():
         default=""
     )
 
+
 def register():
     from bpy.utils import register_class
     for cls in classes:
         register_class(cls)
-	
-	# Add export buttons to File -> Export menu
+
+    # Add export buttons to File -> Export menu
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export_stk_material)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export_stk_kart)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export_stk_track)
-    
+
     # Add custom STK object buttons to 3D View -> Add menu
     bpy.types.VIEW3D_MT_add.append(menu_func_add_stk_object)
-    
+
     # Add export buttons the 3D View header menu
     bpy.types.VIEW3D_HT_tool_header.append(header_func_export_stk_kart)
     bpy.types.VIEW3D_HT_tool_header.append(header_func_export_stk_track)
 
+
 def unregister():
-	# Unregister export buttons from 3D View header menu
+    # Unregister export buttons from 3D View header menu
     bpy.types.VIEW3D_HT_tool_header.remove(menu_func_export_stk_kart)
     bpy.types.VIEW3D_HT_tool_header.remove(menu_func_export_stk_track)
-    
+
     # Unregister custom STK object buttons from 3D View -> Add menu
     bpy.types.VIEW3D_MT_add.remove(menu_func_add_stk_object)
-    
+
     # Unregister export buttons from File -> Export Menu
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export_stk_material)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export_stk_kart)
@@ -135,6 +139,7 @@ def unregister():
     from bpy.utils import unregister_class
     for cls in classes:
         unregister_class(cls)
+
 
 if __name__ == "__main__":
     register()

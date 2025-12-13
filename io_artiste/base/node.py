@@ -1,5 +1,7 @@
 import bpy
+
 from .editor import STKeditor
+
 
 class node(bpy.types.Node):
     bl_idname = 'CustomNodeType'
@@ -16,18 +18,19 @@ class node(bpy.types.Node):
         if valeur is not None and hasattr(socket, "default_value"):
             socket.default_value = valeur
         return socket
-    
+
     def supr_node_entrer(self, nom):
         if self.inputs.get(nom): self.inputs.remove(self.inputs[nom])
-    
+
     def node_sortie(self, type_node, nom, label, valeur=None):
         socket = self.outputs.new(type_node, label)
         if valeur is not None and hasattr(socket, "default_value"):
             socket.default_value = valeur
         return socket
-    
+
     def supr_node_sortie(self, nom):
         if self.outputs.get(nom): self.outputs.remove(self.outputs[nom])
+
     # =========================
 
     def draw_buttons(self, context, layout):
@@ -40,10 +43,10 @@ class node(bpy.types.Node):
 
     def free(self):  # Suppression du node
         print(f"Suppression du node {self.name}")
-    
+
     def process(self, context, id, path):
         pass
-    
+
     def process_group(self, context, id, path):
         pass
 

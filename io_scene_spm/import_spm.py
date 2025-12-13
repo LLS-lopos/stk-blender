@@ -20,16 +20,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import bmesh, bpy, bpy_extras, os, struct, string, sys
+import bmesh
+import bpy
+import bpy_extras
+import os
+import struct
 from bpy_extras.image_utils import load_image
+
 spm_version = 1
+
 
 def create_material(tex_fname_1, tex_fname_2, tex_name_1, tex_name_2):
     material_name = (tex_name_1 if tex_name_1 else "_")
     material = bpy.data.materials.new(material_name)
 
     material.use_nodes = True
-    material.use_backface_culling  = True
+    material.use_backface_culling = True
     nodes = material.node_tree.nodes
     links = material.node_tree.links
 
@@ -37,9 +43,9 @@ def create_material(tex_fname_1, tex_fname_2, tex_name_1, tex_name_2):
     assert principled_node.type == 'BSDF_PRINCIPLED'
     x, y = principled_node.location
     # Make it less shiny
-    if (4, 0, 0) > bpy.app.version: # Old specular name before Blender 4.0
+    if (4, 0, 0) > bpy.app.version:  # Old specular name before Blender 4.0
         principled_node.inputs["Specular"].default_value = 0
-    else: # New specular name
+    else:  # New specular name
         principled_node.inputs["Specular IOR Level"].default_value = 0
     principled_node.inputs["Roughness"].default_value = 1
 
@@ -86,16 +92,18 @@ def create_material(tex_fname_1, tex_fname_2, tex_name_1, tex_name_2):
 
     return material
 
+
 def decompressHalfFloat(bytes):
     return struct.unpack("<e", bytes)[0]
+
 
 def generateMeshBuffer(spm, vertices_count, indices_count,
                        read_normal, read_vcolor, read_tangent,
                        uv_one, uv_two, is_skinned, material_map,
                        material_id):
-    obj_name =\
-        (material_map[material_id][2] if material_map[material_id][2] else "_") +\
-        "_" +\
+    obj_name = \
+        (material_map[material_id][2] if material_map[material_id][2] else "_") + \
+        "_" + \
         (material_map[material_id][3] if material_map[material_id][3] else "_")
     mesh = bpy.data.meshes.new(obj_name)
     obj = bpy.data.objects.new(obj_name, mesh)
@@ -103,7 +111,7 @@ def generateMeshBuffer(spm, vertices_count, indices_count,
     bm.from_mesh(mesh)
 
     vertices_list = []
-    idx_size =\
+    idx_size = \
         4 if vertices_count > 65535 else 2 if vertices_count > 255 else 1
     for vert in range(0, vertices_count):
         vc = None
@@ -143,13 +151,13 @@ def generateMeshBuffer(spm, vertices_count, indices_count,
     indices_list = None
     if idx_size == 4:
         indices_list = struct.unpack("%dI" % (indices_count,),
-            spm.read(indices_count * idx_size))
+                                     spm.read(indices_count * idx_size))
     elif idx_size == 2:
         indices_list = struct.unpack("%dH" % (indices_count,),
-            spm.read(indices_count * idx_size))
+                                     spm.read(indices_count * idx_size))
     else:
         indices_list = struct.unpack("%dB" % (indices_count,),
-            spm.read(indices_count * idx_size))
+                                     spm.read(indices_count * idx_size))
 
     # Required after adding / removing vertices and before accessing them
     # by index.
@@ -179,7 +187,7 @@ def generateMeshBuffer(spm, vertices_count, indices_count,
             if uv_two:
                 loop[uv_layer_two].uv = vertices_list[loop.vert.index][1][2:4]
 
-    bmesh.ops.remove_doubles(bm, verts = bm.verts)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts)
     bm.to_mesh(mesh)
     bm.free()
 
@@ -191,6 +199,7 @@ def generateMeshBuffer(spm, vertices_count, indices_count,
     bpy.ops.object.shade_smooth()
     bpy.context.view_layer.objects.active = obj
 
+
 def getImage(tex_name, working_directory, extra_tex_path):
     # Try in loaded images first:
     for image in bpy.data.images:
@@ -198,16 +207,18 @@ def getImage(tex_name, working_directory, extra_tex_path):
             return image
 
     # Try local directory first
-    img = bpy_extras.image_utils.load_image(tex_name, working_directory, place_holder=True, check_existing=True, force_reload=True)
+    img = bpy_extras.image_utils.load_image(tex_name, working_directory, place_holder=True, check_existing=True,
+                                            force_reload=True)
     if img is not None:
         return img
     img = bpy_extras.image_utils.load_image(tex_name, extra_tex_path,
-        recursive = True, place_holder=True, check_existing=True, force_reload=True)
+                                            recursive=True, place_holder=True, check_existing=True, force_reload=True)
     if img is not None:
         return img
     else:
         print("Missing image %s: placeholder image created" % tex_name)
     return None
+
 
 def loadSPM(context, filepath, extra_tex_path):
     spm = open(filepath, 'rb')
@@ -254,12 +265,12 @@ def loadSPM(context, filepath, extra_tex_path):
         if tex_size > 0:
             tex_name_1 = spm.read(tex_size).decode('ascii')
             tex_fname_1 = getImage(tex_name_1, working_directory,
-                extra_tex_path);
+                                   extra_tex_path);
         tex_size = struct.unpack('<B', spm.read(1))[0]
         if tex_size > 0:
             tex_name_2 = spm.read(tex_size).decode('ascii')
             tex_fname_2 = getImage(tex_name_2, working_directory,
-                extra_tex_path);
+                                   extra_tex_path);
         material = create_material(tex_fname_1, tex_fname_2, tex_name_1, tex_name_2)
         material_map.append((tex_fname_1, tex_fname_2, tex_name_1, tex_name_2, material))
 
@@ -274,10 +285,10 @@ def loadSPM(context, filepath, extra_tex_path):
             material_id = struct.unpack('<H', spm.read(2))[0]
             assert material_id < material_count
             generateMeshBuffer(spm, vertices_count, indices_count,
-                read_normal, read_vcolor, read_tangent,
-                material_map[material_id][2] is not None,
-                material_map[material_id][3] is not None,
-                is_skinned, material_map, material_id)
+                               read_normal, read_vcolor, read_tangent,
+                               material_map[material_id][2] is not None,
+                               material_map[material_id][3] is not None,
+                               is_skinned, material_map, material_id)
         if header == "SPMS":
             # Reserved, never used
             spm.read(24);

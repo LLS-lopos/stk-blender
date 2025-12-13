@@ -1,6 +1,6 @@
 import bpy
+
 from ...base.node import node
-from mathutils import Vector
 
 
 class Decimal(node):
@@ -22,4 +22,3 @@ class Decimal(node):
 
     def update(self):
         self.process(bpy.context, None, None)
-

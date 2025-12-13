@@ -1,5 +1,7 @@
 import bpy
+
 from ...base.node import node
+
 
 class STK_debug_track(node):
     bl_idname = 'STK_Debug_Track'
@@ -10,7 +12,8 @@ class STK_debug_track(node):
     sortie: bpy.props.StringProperty(name="output", default="")
 
     debug_track: bpy.props.BoolProperty(name="track", default=False, update=lambda self, context: self.update())
-    debug_check: bpy.props.BoolProperty(name="checkline", description="activate debug artiste", default=False, update=lambda self, context: self.update())
+    debug_check: bpy.props.BoolProperty(name="checkline", description="activate debug artiste", default=False,
+                                        update=lambda self, context: self.update())
 
     def init(self, context):
         self.node_entrer("NodeSocketString", "input_0", "", "")
@@ -25,13 +28,13 @@ class STK_debug_track(node):
         # Check for input socket existence
         if len(self.inputs) > 0:
             input_socket = self.inputs[0]
-            
+
             if input_socket.is_linked:
                 links = input_socket.links
                 if links:
                     from_socket = links[0].from_socket
                     from_node = links[0].from_node
-                    
+
                     # Try to get the value via the source node's process method first
                     if hasattr(from_node, "process"):
                         try:
@@ -39,13 +42,13 @@ class STK_debug_track(node):
                             self.entrer = str(value)
                         except:
                             pass
-                    
+
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
                         self.entrer = str(from_socket.default_value)
             else:
                 self.entrer = ""
-        
+
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
             self.sortie = ""

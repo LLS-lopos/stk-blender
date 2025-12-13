@@ -27,7 +27,11 @@
 # It is not possible to select individual objects to be exported; all objects
 # that are not marked as 'ignore' or having 'hide_render' are exported.
 
-import bpy, os, sys, argparse
+import argparse
+import bpy
+import os
+import sys
+
 
 def main():
     # get the args passed to blender after "--", all of which are ignored by
@@ -41,8 +45,8 @@ def main():
 
     # When --help or no args are given, print this help
     usage_text = (
-        "Export a SuperTuxKart (STK) object in background mode with this script. Supported objects include karts, tracks, library nodes, and standalone SPM models:"
-        "  blender --background --python " + __file__ + " -- [options]"
+            "Export a SuperTuxKart (STK) object in background mode with this script. Supported objects include karts, tracks, library nodes, and standalone SPM models:"
+            "  blender --background --python " + __file__ + " -- [options]"
     )
 
     parser = argparse.ArgumentParser(description=usage_text)
@@ -84,8 +88,8 @@ def main():
         return
 
     if 'stk_material_export' not in dir(bpy.ops.screen) and \
-       'stk_kart_export' not in dir(bpy.ops.screen) and \
-       'stk_track_export' not in dir(bpy.ops.screen):
+            'stk_kart_export' not in dir(bpy.ops.screen) and \
+            'stk_track_export' not in dir(bpy.ops.screen):
         print("Error: Cannot find the SuperTuxKart exporters. Make sure they are installed properly and enabled.")
         return
 
@@ -114,24 +118,27 @@ def main():
                     print("Exporting " + args.file + " as a track")
                 elif bpy.context.scene['is_stk_node'] == "true":
                     print("Exporting " + args.file + " as a library node")
-                bpy.ops.screen.stk_track_export(filepath=args.save_path, exportScene=True, exportDrivelines=True, exportMaterials=True)
+                bpy.ops.screen.stk_track_export(filepath=args.save_path, exportScene=True, exportDrivelines=True,
+                                                exportMaterials=True)
         except:
             print("Warning: File " + args.file + " does not contain a SuperTuxKart object, exporting as an SPM model")
             bpy.ops.screen.spm_export(localsp=False, filepath=args.save_path, selected=False, \
-                                  export_tangent='precalculate_tangents' in bpy.context.scene\
-                                  and bpy.context.scene['precalculate_tangents'] == 'true')
+                                      export_tangent='precalculate_tangents' in bpy.context.scene \
+                                                     and bpy.context.scene['precalculate_tangents'] == 'true')
     elif args.spm and not args.kart and not args.track and not args.materials:
         bpy.ops.screen.spm_export(localsp=False, filepath=args.save_path, selected=False, \
-                                  export_tangent='precalculate_tangents' in bpy.context.scene\
-                                  and bpy.context.scene['precalculate_tangents'] == 'true')
+                                  export_tangent='precalculate_tangents' in bpy.context.scene \
+                                                 and bpy.context.scene['precalculate_tangents'] == 'true')
     elif args.kart and not args.track and not args.materials and not args.spm:
         bpy.ops.screen.stk_kart_export(filepath=args.save_path)
     elif args.track and not args.kart and not args.materials and not args.spm:
-        bpy.ops.screen.stk_track_export(filepath=args.save_path, exportScene=True, exportDrivelines=True, exportMaterials=True)
+        bpy.ops.screen.stk_track_export(filepath=args.save_path, exportScene=True, exportDrivelines=True,
+                                        exportMaterials=True)
     elif args.materials and not args.kart and not args.track and not args.spm:
         bpy.ops.screen.stk_material_export(filepath=args.save_path)
 
     print("Exported file " + args.file + " to " + args.save_path)
+
 
 if __name__ == "__main__":
     main()

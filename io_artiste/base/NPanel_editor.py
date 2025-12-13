@@ -1,27 +1,29 @@
 import bpy
+
 from .editor import STKeditor
 
 bpy.types.Scene.stk_config1 = bpy.props.StringProperty(
-            name="STK Configuration File",
-            subtype='FILE_PATH',
-            default="")
+    name="STK Configuration File",
+    subtype='FILE_PATH',
+    default="")
 
 bpy.types.Scene.stk_config2 = bpy.props.StringProperty(
-            name="STK Configuration File",
-            subtype='FILE_PATH',
-            default="")
+    name="STK Configuration File",
+    subtype='FILE_PATH',
+    default="")
 
 bpy.types.Scene.version_stk = bpy.props.EnumProperty(
-        name="Version STK",
-        items=[
-            ("1.x", "Series 1.x", "", "", 0),
-            ("2.x", "Series 2.x", "", "", 1)
-        ],
-        default='1.x')
+    name="Version STK",
+    items=[
+        ("1.x", "Series 1.x", "", "", 0),
+        ("2.x", "Series 2.x", "", "", 1)
+    ],
+    default='1.x')
 
 bpy.types.Scene.debug_artiste = bpy.props.BoolProperty(
-    name="Debug Artiste", 
+    name="Debug Artiste",
     default=False)
+
 
 class STKpanel(bpy.types.Panel):
     bl_idname = "STK_PT_panel"
@@ -36,15 +38,15 @@ class STKpanel(bpy.types.Panel):
         # Check if we are in the correct editor type
         if context.area.type != 'NODE_EDITOR':
             return False
-            
+
         # Check if we have a node tree
         if not hasattr(context.space_data, 'edit_tree') or context.space_data.edit_tree is None:
             return False
-            
+
         # Check if it's our custom node tree type
         if context.space_data.edit_tree.bl_idname != STKeditor.bl_idname:
             return False
-            
+
         return True
 
     def draw(self, context):
@@ -73,6 +75,7 @@ class STKpanel(bpy.types.Panel):
         boite = layout.box()
         """
 
+
 class STK_config_file1(bpy.types.Operator):
     bl_idname = "runner.config_stk_1"
     bl_label = "Config STK"
@@ -91,6 +94,7 @@ class STK_config_file1(bpy.types.Operator):
     def invoke(self, context, event):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
+
 
 class STK_config_file2(bpy.types.Operator):
     bl_idname = "runner.config_stk_2"
@@ -111,6 +115,7 @@ class STK_config_file2(bpy.types.Operator):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
 
+
 class STK_modif_config(bpy.types.Operator):
     bl_idname = "runner.modif_config"
     bl_label = "Modif Config"
@@ -129,17 +134,20 @@ class STK_modif_config(bpy.types.Operator):
             if pathlib.Path(context.scene.stk_config2).name == "config.xml":
                 if context.scene.version_stk == "1.x":
                     print("Disabling artist debug mode for STK 1.x")
-                    remplacer_ligne(pathlib.Path(context.scene.stk_config1), "    <artist_debug_mode value=\"false\" />")
+                    remplacer_ligne(pathlib.Path(context.scene.stk_config1),
+                                    "    <artist_debug_mode value=\"false\" />")
                 else:
                     print("Disabling artist debug mode for STK 2.x")
-                    remplacer_ligne(pathlib.Path(context.scene.stk_config2), "    <artist_debug_mode value=\"false\" />")
+                    remplacer_ligne(pathlib.Path(context.scene.stk_config2),
+                                    "    <artist_debug_mode value=\"false\" />")
         return {'FINISHED'}
+
 
 def remplacer_ligne(fichier, texte: str):
     if fichier.exists():
         with open(fichier, "r") as f:
             lignes = f.readlines()
-        
+
         # Check if the line exists
         ligne_trouvee = False
         for i, l in enumerate(lignes):
@@ -151,7 +159,7 @@ def remplacer_ligne(fichier, texte: str):
         if ligne_trouvee:
             try:
                 lignes[ligne] = texte + "\n"  # Replace the line at the specified position
-                
+
                 with open(fichier, "w") as f:
                     f.writelines(lignes)
                 print(f"Line at position {ligne} replaced with: {texte}")
