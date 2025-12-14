@@ -17,8 +17,7 @@ from .node.option import (option_running)
 
 classes = (
     node_editor.STKeditor,
-    menu.STKinit,
-    menu.STKrun,
+    menu.STKoperator,
     menu.STKmode,
     menu.STKdebug,
     node_base.node,
@@ -35,8 +34,7 @@ classes = (
 
 def add_stk_node_menu(self, context):
     if context.space_data.tree_type != node_editor.STKeditor.bl_idname: return
-    self.layout.menu(menu.STKinit.bl_idname)
-    self.layout.menu(menu.STKrun.bl_idname)
+    self.layout.menu(menu.STKoperator.bl_idname)
     self.layout.menu(menu.STKmode.bl_idname)
     self.layout.menu(menu.STKdebug.bl_idname)
         
