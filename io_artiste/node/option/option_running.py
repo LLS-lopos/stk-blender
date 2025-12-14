@@ -54,7 +54,6 @@ class STK_op_running(node):
             self.sortie = ""
             if self.entrer != "": self.sortie += self.entrer + " "
 
-            if self.fps: self.sortie += f"--fps-debug"
             if self.start_screen: self.sortie += f" --no-start-screen"
             if self.race_now: self.sortie += f" --race-now"
 
