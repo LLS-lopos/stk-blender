@@ -12,6 +12,7 @@ import bpy
 from .base import (node_base, menu, node_editor)
 from .node.init import (cli, init_stk)
 from .node.run import (runner)
+from .node.mode import (run_race)
 
 classes = (
     node_editor.STKeditor,
@@ -27,6 +28,7 @@ classes = (
     cli.STK_cli,
     runner.STK_run,
     runner.STK_OT_RunStk,
+    run_race.STK_test_race,
 )
 
 def add_stk_node_menu(self, context):

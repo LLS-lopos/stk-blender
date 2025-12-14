@@ -1,6 +1,7 @@
 import bpy
 from ..node.init import (cli, init_stk)
 from ..node.run import (runner)
+from ..node.mode import (run_race)
 
 class STKinit(bpy.types.Menu):
     bl_idname = 'NODE_MT_STK_Init'
@@ -19,6 +20,7 @@ class STKmode(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
+        layout.operator("node.add_node", text=run_race.STK_test_race.bl_label).type = run_race.STK_test_race.bl_idname
             
 class STKrun(bpy.types.Menu):
     bl_idname = 'NODE_MT_STK_run'
