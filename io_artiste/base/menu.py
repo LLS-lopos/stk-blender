@@ -2,6 +2,7 @@ import bpy
 from ..node.init import (cli, init_stk)
 from ..node.run import (runner)
 from ..node.mode import (run_race)
+from ..node.option import (option_running)
 
 class STKinit(bpy.types.Menu):
     bl_idname = 'NODE_MT_STK_Init'
@@ -38,6 +39,7 @@ class STKdebug(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
+        layout.operator("node.add_node", text=option_running.STK_op_running.bl_label).type = option_running.STK_op_running.bl_idname
         
 # TODO
 # add nodes 
