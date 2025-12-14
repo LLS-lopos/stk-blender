@@ -35,12 +35,10 @@ class STKdebug(bpy.types.Menu):
 # menu: Mode, Operator, Debug
 
 ## OPERATOR
-# Demo Mode
-# Graphic
-# Windows
 # Preview Info
 
 ## MODE
+# Demo Mode
 # Race
 # Battle
 # Capture Flag
@@ -51,6 +49,8 @@ class STKdebug(bpy.types.Menu):
 # Egg Party
 
 ## DEBUG
+# Graphic
+# Windows
 # Controller
 # Graphique
 # Kart
