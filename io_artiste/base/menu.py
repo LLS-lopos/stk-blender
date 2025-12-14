@@ -46,14 +46,11 @@ class STKdebug(bpy.types.Menu):
 # menu: Mode, Init, Run, Debug
 
 ## INIT
-# Initial
-# CLI
 # Demo Mode
 # Graphic
 # Windows
 
 ## MODE
-# Race
 # Battle
 # Capture Flag
 # Cutscene
@@ -63,12 +60,12 @@ class STKdebug(bpy.types.Menu):
 # Egg Party
 
 ## RUN
-# Run
 # Preview Info
 
 ## DEBUG
 # Controller
 # Graphique
 # Kart
-# Other
 # Track
+
+### Replace Init and Run by Operator
