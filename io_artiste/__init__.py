@@ -12,11 +12,12 @@ import bpy
 from .base import (node_base, menu, node_editor)
 from .node.init import (cli, init_stk)
 from .node.run import (runner)
+from .node.mode import (run_race)
+from .node.option import (option_running)
 
 classes = (
     node_editor.STKeditor,
-    menu.STKinit,
-    menu.STKrun,
+    menu.STKoperator,
     menu.STKmode,
     menu.STKdebug,
     node_base.node,
@@ -27,12 +28,13 @@ classes = (
     cli.STK_cli,
     runner.STK_run,
     runner.STK_OT_RunStk,
+    run_race.STK_test_race,
+    option_running.STK_op_running,
 )
 
 def add_stk_node_menu(self, context):
     if context.space_data.tree_type != node_editor.STKeditor.bl_idname: return
-    self.layout.menu(menu.STKinit.bl_idname)
-    self.layout.menu(menu.STKrun.bl_idname)
+    self.layout.menu(menu.STKoperator.bl_idname)
     self.layout.menu(menu.STKmode.bl_idname)
     self.layout.menu(menu.STKdebug.bl_idname)
         

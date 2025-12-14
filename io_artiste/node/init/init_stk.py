@@ -1,5 +1,7 @@
 import bpy
+
 from ...base.node_base import node
+
 
 class STK_initial(node):
     bl_idname = 'STK_Initialisation'
@@ -9,82 +11,65 @@ class STK_initial(node):
     # Property to store the output list
     sortie: bpy.props.StringProperty(name="output", default="")
 
-    use_sudo: bpy.props.BoolProperty(
-        name="Super User",
-        description="Use super-user rights to launch STK",
-        default=False,
-        update=lambda self, context: self.update())
-    
-    password: bpy.props.StringProperty(
-        name="Password",
-        description="Password for sudo command",
-        subtype='PASSWORD',
-        default="",
-        update=lambda self, context: self.update())
-    
-    executable_game: bpy.props.StringProperty(
-            name="Executable (supertuxkart) path",
-            subtype='FILE_PATH',
-            update=lambda self, context: self.update())
-        
-    track_path: bpy.props.StringProperty(
-            name="Track (data) path",
-            subtype='DIR_PATH',
-            update=lambda self, context: self.update())
-    kart_path: bpy.props.StringProperty(
-            name="Kart (data) path",
-            subtype='DIR_PATH',
-            update=lambda self, context: self.update())
-    
-    disable_addon_tracks: bpy.props.BoolProperty(
-        name="Disable addon tracks",
-        description="",
-        default=False,
-        update=lambda self, context: self.update())
-    
-    disable_addon_karts: bpy.props.BoolProperty(
-        name="Disable addon karts",
-        description="",
-        default=False,
-        update=lambda self, context: self.update())
-    
-    difficulty: bpy.props.EnumProperty(
-        name="Difficulty",
-        items=[
-            ("0", "Novice", "", "", 0),
-            ("1", "Intermediate", "", "", 1),
-            ("2", "Expert", "", "", 2),
-            ("3", "Super Tux", "", "", 3),
-        ],
-        default="0",
-        update=lambda self, context: self.update()
-    )
+    use_sudo: bpy.props.BoolProperty(name="Super User", description="Use super-user rights to launch STK",
+                                     default=False,
+                                     update=lambda self, context: self.update())
+
+    password: bpy.props.StringProperty(name="Password", description="Password for sudo command",
+                                       subtype='PASSWORD', default="", update=lambda self, context: self.update())
+
+    use_executable_game: bpy.props.BoolProperty(name="Executable Custom", description="Use exe of game or system",
+                                                default=False, update=lambda self, context: self.update())
+
+    executable_game: bpy.props.StringProperty(name="Executable (supertuxkart) path", subtype='FILE_PATH',
+                                              update=lambda self, context: self.update())
+
+    track_path: bpy.props.StringProperty(name="Track (data) path", subtype='DIR_PATH',
+                                         update=lambda self, context: self.update())
+
+    kart_path: bpy.props.StringProperty(name="Kart (data) path", subtype='DIR_PATH',
+                                        update=lambda self, context: self.update())
+
+    disable_addon_tracks: bpy.props.BoolProperty(name="Disable addon tracks", description="", default=False,
+                                                 update=lambda self, context: self.update())
+
+    disable_addon_karts: bpy.props.BoolProperty(name="Disable addon karts", description="", default=False,
+                                                update=lambda self, context: self.update())
+
+    difficulty: bpy.props.EnumProperty( name="Difficulty", default="0", update=lambda self, context: self.update(),
+                                        items=[
+                                            ("0", "Novice", "", "", 0),
+                                            ("1", "Intermediate", "", "", 1),
+                                            ("2", "Expert", "", "", 2),
+                                            ("3", "Super Tux", "", "", 3)])
 
     # Node initialization
     def init(self, context):
-        print("Node STK_initial initialization")
-        
         # Create the output
         self.supr_node_sortie("List")
         self.node_sortie('NodeSocketString', 'List', 'liste', "")
 
     def draw_buttons(self, context, layout):
         # Create buttons
-        layout.prop(self, "use_sudo")
+        ligne = layout.row()
+        ligne.prop(self, "use_sudo")
+        ligne.prop(self, "use_executable_game")
+
         if self.use_sudo:
             layout.prop(self, "password", text="Password")
 
-        ligne = layout.row()
-        ligne.label(text=f'Game (file) path: {self.executable_game}')
-        ligne.operator('runner.executable_file', icon='FILE', text="").game = self.name
+        if self.use_executable_game:
+            ligne = layout.row()
+            ligne.label(text=f'Game (file) path: {self.executable_game}')
+            ligne.operator('runner.executable_file', icon='FILE', text="").game = self.name # returns game (value executable_file) to the operator
 
         ligne = layout.row()
         ligne.label(text=f'Track (folder) path: {self.track_path}')
-        ligne.operator('runner.track_path', icon='FILEBROWSER', text="").tracks = self.name
+        ligne.operator('runner.track_path', icon='FILEBROWSER', text="").tracks = self.name # returns tracks (value folder_name in track_path) to the operator
 
         ligne = layout.row()
         ligne.label(text=f'Kart (folder) path: {self.kart_path}')
-        ligne.operator('runner.kart_path', icon='FILEBROWSER', text="").karts = self.name
+        ligne.operator('runner.kart_path', icon='FILEBROWSER', text="").karts = self.name  # returns karts (value in kart_path) to the operator
 
         ligne = layout.row()
         ligne.prop(self, "disable_addon_tracks")
@@ -101,9 +86,11 @@ class STK_initial(node):
             self.sortie = ""
             if self.use_sudo != False:
                 self.sortie += f"echo '{self.password}' | sudo -S "
-            if self.executable_game != "":
-                self.sortie += f"{self.executable_game}"
-            else: self.sortie += "supertuxkart"
+            if self.use_executable_game != False:
+                if self.executable_game != "":
+                    self.sortie += f"{self.executable_game}"
+            else:
+                self.sortie += "supertuxkart"
             if self.disable_addon_tracks != False:
                 self.sortie += f" --disable-addon-tracks"
             if self.disable_addon_karts != False:
@@ -135,7 +122,7 @@ class STK_Pick_Executable_Operator(bpy.types.Operator):
                     node.executable_game = self.filepath
                     node.update()
                     return {'FINISHED'}
-        
+
         self.report({'ERROR'}, "Node not found")
         return {'CANCELLED'}
 
