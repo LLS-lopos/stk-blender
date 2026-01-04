@@ -23,9 +23,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            stk-addons.zip
-            stk-import-export.zip
-            stk-artist-test.zip
+            io_antarctica_scene.zip
+            io_scene_spm.zip
+            io_artiste.zip
           tag_name: ${{ github.ref_name }}
           name: SuperTuxKart Tools ${{ github.ref_name }}
         env:
