@@ -17,6 +17,7 @@ jobs:
         run: |
           zip -rZ bzip2 stk-addons . -i io_antarctica_scene
           zip -rZ bzip2 stk-import-export . -i io_scene_spm
+          zip -rZ bzip2 stk-artist-test . -i io_artiste
 
       - name: create release
         uses: softprops/action-gh-release@v2
@@ -24,7 +25,8 @@ jobs:
           files: |
             stk-addons.zip
             stk-import-export.zip
-          tag_name: STK Tools
+            stk-artist-test.zip
+          tag_name: ${{ github.ref_name }}
           name: SuperTuxKart Tools ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
