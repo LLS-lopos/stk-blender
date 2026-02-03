@@ -1,6 +1,6 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
 class STK_graphic(node):
@@ -8,8 +8,8 @@ class STK_graphic(node):
     bl_label = 'Graphic'
     bl_icon = 'NONE'
 
-    entrer: bpy.props.StringProperty(name="input", default="")
-    sortie: bpy.props.StringProperty(name="output", default="")
+    s_input: bpy.props.StringProperty(name="input", default="")
+    s_output: bpy.props.StringProperty(name="output", default="")
 
     glow: bpy.props.BoolProperty(name="GLOW", description="Enable/Disable glow effect.", default=False,
                                  update=lambda self, context: self.update())
@@ -41,8 +41,16 @@ class STK_graphic(node):
 
     anisotropic: bpy.props.IntProperty(name="ANISOTROPIC", description="Anisotropic filtering quality (0 to disable).",
                                        default=0, update=lambda self, context: self.update())
-    shadows: bpy.props.IntProperty(name="SHADOWS", description="Shadow resolution (0 to disable).", default=0,
-                                   update=lambda self, context: self.update())
+    shadows: bpy.props.EnumProperty(name="SHADOWS", 
+                                   description="Shadow resolution (0 to disable).",
+                                   items=[
+                                       ('0', 'Disabled', 'Disabled', '', 0),
+                                       ('256', 'Low', 'Low', '', 1),
+                                       ('512', 'Medium', 'Medium', '', 2),
+                                       ('1024', 'High', 'High', '', 3),
+                                       ('2048', 'Very high', 'Very high', 4),
+                                       ],
+                                       default='0', update=lambda self, context: self.update())
     render_driver: bpy.props.EnumProperty(name="RENDER DRIVER",
                                           description="Render driver to use (gl or directx9).",
                                           items=[
@@ -51,10 +59,11 @@ class STK_graphic(node):
                                               ('vulkan', 'Vulkan', 'Vulkan', '', 2),
                                           ],
                                           default='gl', update=lambda self, context: self.update())
+    render_superior: bpy.props.BoolProperty(name="Render +", default=False, update=lambda self, context: self.update())
 
     def init(self, context):
-        self.node_entrer("NodeSocketString", "input_0", "", "")
-        self.node_sortie('NodeSocketString', 'output_0', '', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output('NodeSocketString', 'output_0', '', "")
 
     def draw_buttons(self, context, layout):
         box = layout.box()
@@ -64,27 +73,31 @@ class STK_graphic(node):
         ligne.prop(self, "tex_compression")
 
         ligne = box.row()
-        ligne.label(text="rendu avancer si activation de")
-        ligne.prop(self, "light_dynamic")
+        ligne.prop(self, "render_superior")
+        if self.render_superior:
+            ligne = box.row()
+            box.prop(self, "shadows")
+            box.prop(self, "anisotropic")
 
-        ligne = box.row()
-        ligne.prop(self, "glow")
-        ligne.prop(self, "bloom")
-        ligne.prop(self, "dof")
+            ligne = box.row()
+            ligne.prop(self, "mlaa")
+            ligne.prop(self, "light_dynamic")
 
-        ligne = box.row()
-        ligne.prop(self, "mlaa")
-        ligne.prop(self, "motion_blur")
-        ligne.prop(self, "light_shaft")
+            ligne = box.row()
+            ligne.prop(self, "glow")
+            ligne.prop(self, "tex_hd")
 
-        ligne = box.row()
-        ligne.prop(self, "ibl")
-        ligne.prop(self, "tex_hd")
-        ligne.prop(self, "ssao")
+            ligne = box.row()
+            ligne.prop(self, "light_shaft")
+            ligne.prop(self, "bloom")
+            
+            ligne = box.row()
+            ligne.prop(self, "ibl")
+            ligne.prop(self, "ssao")
 
-        ligne = box.row()
-        box.prop(self, "anisotropic")
-        box.prop(self, "shadows")
+            ligne = box.row()
+            ligne.prop(self, "blur")
+            ligne.prop(self, "dof")
 
         ligne = box.row()
         box.prop(self, "render_driver")
@@ -104,93 +117,79 @@ class STK_graphic(node):
                     if hasattr(from_node, "process"):
                         try:
                             value = from_node.process(context, id, path)
-                            self.entrer = str(value)
+                            self.s_input = str(value)
                         except:
                             pass
 
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
-                        self.entrer = str(from_socket.default_value)
+                        self.s_input = str(from_socket.default_value)
             else:
-                self.entrer = ""
+                self.s_input = ""
 
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
-            self.sortie = ""
-            if self.entrer != "":
-                self.sortie += self.entrer + " "
-
-            if self.glow == True:
-                self.sortie += f"--enable-glow"
-            else:
-                self.sortie += f"--disable-glow"
-
-            if self.bloom == True:
-                self.sortie += f" --enable-bloom"
-            else:
-                self.sortie += f" --disable-bloom"
-
-            if self.light_shaft == True:
-                self.sortie += f" --enable-light-shaft"
-            else:
-                self.sortie += f" --disable-light-shaft"
-
-            if self.dof == True:
-                self.sortie += f" --enable-dof"
-            else:
-                self.sortie += f" --disable-dof"
-
-            if self.particule == True:
-                self.sortie += f" --enable-particles"
-            else:
-                self.sortie += f" --disable-particles"
+            self.s_output = ""
+            if self.s_input != "":
+                self.s_output += self.s_input + " "
 
             if self.animation_kart == True:
-                self.sortie += f" --enable-animated-characters"
+                self.s_output += f" --enable-animated-characters"
             else:
-                self.sortie += f" --disable-animated-characters"
-
-            if self.motion_blur == True:
-                self.sortie += f" --enable-motion-blur"
-            else:
-                self.sortie += f" --disable-motion-blur"
-
-            if self.mlaa == True:
-                self.sortie += f" --enable-mlaa"
-            else:
-                self.sortie += f" --disable-mlaa"
-
+                self.s_output += f" --disable-animated-characters"
+            
             if self.tex_compression == True:
-                self.sortie += f" --enable-texture-compression"
+                self.s_output += f" --enable-texture-compression"
             else:
-                self.sortie += f" --disable-texture-compression"
-
-            if self.ssao == True:
-                self.sortie += f" --enable-ssao"
+                self.s_output += f" --disable-texture-compression"
+            
+            if self.particule == True:
+                self.s_output += f" --enable-particles"
             else:
-                self.sortie += f" --disable-ssao"
+                self.s_output += f" --disable-particles"
 
-            if self.ibl == True:
-                self.sortie += f" --enable-ibl"
+            if self.render_superior:
+                if self.glow == True: self.s_output += f"--enable-glow"
+                else: self.s_output += f"--disable-glow"
+                if self.bloom == True: self.s_output += f" --enable-bloom"
+                else: self.s_output += f" --disable-bloom"
+                if self.light_shaft == True: self.s_output += f" --enable-light-shaft"
+                else: self.s_output += f" --disable-light-shaft"
+                if self.dof == True: self.s_output += f" --enable-dof"
+                else: self.s_output += f" --disable-dof"
+                if self.motion_blur == True: self.s_output += f" --enable-motion-blur"
+                else: self.s_output += f" --disable-motion-blur"
+                if self.mlaa == True: self.s_output += f" --enable-mlaa"
+                else: self.s_output += f" --disable-mlaa"
+                if self.ssao == True: self.s_output += f" --enable-ssao"
+                else: self.s_output += f" --disable-ssao"
+                if self.ibl == True: self.s_output += f" --enable-ibl"
+                else: self.s_output += f" --disable-ibl"
+                if self.tex_hd == True: self.s_output += f" --enable-hd-textures"
+                else: self.s_output += f" --disable-hd-textures"
+                if self.light_dynamic == True: self.s_output += f" --enable-dynamic-lights"
+                else: self.s_output += f" --disable-dynamic-lights"
+                self.s_output += f" --anisotropic={self.anisotropic}"
+                self.s_output += f" --shadows={self.shadows}"
             else:
-                self.sortie += f" --disable-ibl"
+                self.s_output += f"--disable-glow"
+                self.s_output += f" --disable-bloom"
+                self.s_output += f" --disable-light-shaft"
+                self.s_output += f" --disable-dof"
+                self.s_output += f" --disable-motion-blur"
+                self.s_output += f" --disable-mlaa"
+                self.s_output += f" --disable-ssao"
+                self.s_output += f" --disable-ibl"
+                self.s_output += f" --disable-hd-textures"
+                self.s_output += f" --disable-dynamic-lights"
+                self.s_output += f" --anisotropic=0"
+                self.s_output += f" --shadows=0"
 
-            if self.tex_hd == True:
-                self.sortie += f" --enable-hd-textures"
-            else:
-                self.sortie += f" --disable-hd-textures"
+            
+            self.s_output += f" --render-driver={self.render_driver}"
 
-            if self.light_dynamic == True:
-                self.sortie += f" --enable-dynamic-lights"
-            else:
-                self.sortie += f" --disable-dynamic-lights"
-
-            self.sortie += f" --anisotropic={self.anisotropic}"
-            self.sortie += f" --shadows={self.shadows}"
-            self.sortie += f" --render-driver={self.render_driver}"
-
-            self.outputs[0].default_value = str(self.sortie)
-        return self.sortie
+            self.outputs[0].default_value = str(self.s_output)
+        return self.s_output
 
     def update(self):
         self.process(bpy.context, None, None)

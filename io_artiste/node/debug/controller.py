@@ -1,6 +1,6 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
 class STK_debug_controller(node):
@@ -8,39 +8,39 @@ class STK_debug_controller(node):
     bl_label = 'Debug Controller'
     bl_icon = 'NONE'
 
-    entrer: bpy.props.StringProperty(name="input", default="")
-    sortie: bpy.props.StringProperty(name="output", default="")
+    s_input: bpy.props.StringProperty(name="input", default="")
+    s_output: bpy.props.StringProperty(name="output", default="")
 
-    visual_manette: bpy.props.BoolProperty(name="visual", default=False, update=lambda self, context: self.update())
-    BOOL_clavier: bpy.props.BoolProperty(name="Keyboard", default=False, update=lambda self, context: self.update())
-    BOOL_wii: bpy.props.BoolProperty(name="WiiMote", default=False, update=lambda self, context: self.update())
-    BOOL_manette: bpy.props.BoolProperty(name="Gamepad", default=False, update=lambda self, context: self.update())
-    debug_clavier: bpy.props.BoolProperty(name="debug", default=False, update=lambda self, context: self.update())
-    debug_manette: bpy.props.BoolProperty(name="debug", default=False, update=lambda self, context: self.update())
+    visual_gamepad: bpy.props.BoolProperty(name="visual", default=False, update=lambda self, context: self.update())
+    bool_keyboard: bpy.props.BoolProperty(name="Keyboard", default=False, update=lambda self, context: self.update())
+    bool_wii: bpy.props.BoolProperty(name="WiiMote", default=False, update=lambda self, context: self.update())
+    bool_gamepad: bpy.props.BoolProperty(name="Gamepad", default=False, update=lambda self, context: self.update())
+    debug_keyboard: bpy.props.BoolProperty(name="debug", default=False, update=lambda self, context: self.update())
+    debug_gamepad: bpy.props.BoolProperty(name="debug", default=False, update=lambda self, context: self.update())
     debug_wiimote: bpy.props.BoolProperty(name="debug", default=False, update=lambda self, context: self.update())
-    clavier: bpy.props.IntProperty(name="ID", default=0, min=0, update=lambda self, context: self.update())
-    manette: bpy.props.IntProperty(name="ID", default=0, min=0, update=lambda self, context: self.update())
+    keyboard: bpy.props.IntProperty(name="ID", default=0, min=0, update=lambda self, context: self.update())
+    gamepad: bpy.props.IntProperty(name="ID", default=0, min=0, update=lambda self, context: self.update())
 
     def init(self, context):
-        self.node_entrer("NodeSocketString", "input_0", "", "")
-        self.node_sortie('NodeSocketString', 'output_0', '', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output('NodeSocketString', 'output_0', '', "")
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "BOOL_clavier")
-        if self.BOOL_clavier != False:
+        layout.prop(self, "bool_keyboard")
+        if self.bool_keyboard != False:
             box = layout.box()
-            box.prop(self, "clavier")
-            box.prop(self, "debug_clavier")
+            box.prop(self, "keyboard")
+            box.prop(self, "debug_keyboard")
 
-        layout.prop(self, "BOOL_manette")
-        if self.BOOL_manette != False:
+        layout.prop(self, "bool_gamepad")
+        if self.bool_gamepad != False:
             box = layout.box()
-            box.prop(self, "manette")
-            box.prop(self, "debug_manette")
-            box.prop(self, "visual_manette")
+            box.prop(self, "gamepad")
+            box.prop(self, "debug_gamepad")
+            box.prop(self, "visual_gamepad")
             box = layout.box()
-            box.prop(self, "BOOL_wii")
-            if self.BOOL_wii != False:
+            box.prop(self, "bool_wii")
+            if self.bool_wii != False:
                 box.prop(self, "debug_wiimote")
 
     def process(self, context, id, path):
@@ -58,38 +58,38 @@ class STK_debug_controller(node):
                     if hasattr(from_node, "process"):
                         try:
                             value = from_node.process(context, id, path)
-                            self.entrer = str(value)
+                            self.s_input = str(value)
                         except:
                             pass
 
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
-                        self.entrer = str(from_socket.default_value)
+                        self.s_input = str(from_socket.default_value)
             else:
-                self.entrer = ""
+                self.s_input = ""
 
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
-            self.sortie = ""
-            if self.entrer != "":
-                self.sortie += self.entrer + " "
+            self.s_output = ""
+            if self.s_input != "":
+                self.s_output += self.s_input + " "
 
-            if self.BOOL_clavier != False:
-                self.sortie += f" --use-keyboard={self.clavier}"
-                if self.debug_clavier != False:
-                    self.sortie += f" --keyboard-debug"
-            if self.BOOL_manette != False:
-                self.sortie += f" --use-gamepad={self.manette}"
-                if self.debug_manette != False:
-                    self.sortie += f" --gamepad-debug"
-                if self.visual_manette != False:
-                    self.sortie += f" --gamepad-visuals"
-                if self.BOOL_wii != False:
-                    self.sortie += f" --wii"
+            if self.bool_keyboard != False:
+                self.s_output += f" --use-keyboard={self.keyboard}"
+                if self.debug_keyboard != False:
+                    self.s_output += f" --keyboard-debug"
+            if self.bool_gamepad != False:
+                self.s_output += f" --use-gamepad={self.gamepad}"
+                if self.debug_gamepad != False:
+                    self.s_output += f" --gamepad-debug"
+                if self.visual_gamepad != False:
+                    self.s_output += f" --gamepad-visuals"
+                if self.bool_wii != False:
+                    self.s_output += f" --wii"
                     if self.debug_wiimote != False:
-                        self.sortie += f" --wiimote-debug"
-            self.outputs[0].default_value = str(self.sortie)
-        return self.sortie
+                        self.s_output += f" --wiimote-debug"
+            self.outputs[0].default_value = str(self.s_output)
+        return self.s_output
 
     def update(self):
         self.process(bpy.context, None, None)

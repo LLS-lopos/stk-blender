@@ -1,8 +1,5 @@
-import bpy
-import subprocess
-
-from ...base.node import node
-
+import bpy, subprocess
+from ...base.node_base import node
 
 class STK_run(node):
     bl_idname = 'STK_Go'
@@ -10,16 +7,13 @@ class STK_run(node):
     bl_icon = 'NONE'
 
     # Property to store the value to display
-    doc: bpy.props.StringProperty(
-        name="Value",
-        default=""
-    )
+    doc: bpy.props.StringProperty(name="Value", default="")
     run_or_popen: bpy.props.EnumProperty(
         name="Run or Popen",
         description="Run command for testing from Blender or Popen for independent execution from Blender",
         items=[
-            ("run", "Run", "Run the command", 0),
-            ("popen", "Popen", "Popen the command", 1)
+            ("run", "Run", "Run the command in Blender", 0),
+            ("popen", "Popen", "Run the command in independent process", 1)
         ],
         default="run",
         update=lambda self, context: self.update()
@@ -27,7 +21,7 @@ class STK_run(node):
 
     def init(self, context):
         # Create input socket
-        self.node_entrer("NodeSocketString", "info_input", "", "")
+        self.node_input("NodeSocketString", "info_input", "", "")
 
     def draw_buttons(self, context, layout):
         # Display the value in the interface
@@ -36,27 +30,26 @@ class STK_run(node):
 
     def process(self, context, id, path):
         input_socket = self.inputs[0]
-
+        
         if input_socket.is_linked:
             links = input_socket.links
             if links:
                 from_socket = links[0].from_socket
                 from_node = links[0].from_node
-
+                
                 # Try to get the value via the source node's process method first
                 if hasattr(from_node, "process"):
                     try:
                         value = from_node.process(context, id, path)
                         self.doc = str(value)
                         return self.doc
-                    except:
-                        pass
-
+                    except: pass
+                
                 # If that fails, try to get the default_value
                 if hasattr(from_socket, "default_value"):
                     self.doc = str(from_socket.default_value)
                     return self.doc
-
+        
         # If no connection, use the default value
         self.doc = str(input_socket.default_value)
         return self.doc
@@ -92,10 +85,10 @@ class STK_OT_RunStk(bpy.types.Operator):
                                 start_new_session=True,
                                 text=True
                             )
-
+                            
                             # Store the process ID for potential future use
                             context.scene['stk_process_id'] = process.pid
-
+                            
                             return {'FINISHED'}
                         except Exception as e:
                             self.report({'ERROR'}, f"Failed to start STK: {str(e)}")

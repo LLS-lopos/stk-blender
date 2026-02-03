@@ -3,26 +3,28 @@ import bpy
 from ...base.node_base import node
 
 
-class STK_debug_track(node):
-    bl_idname = 'STK_Debug_Track'
-    bl_label = 'Debug Track'
+class STK_demo_mode(node):
+    bl_idname = 'STK_mode_demo'
+    bl_label = 'Demo Mode'
     bl_icon = 'NONE'
 
     s_input: bpy.props.StringProperty(name="input", default="")
     s_output: bpy.props.StringProperty(name="output", default="")
 
-    debug_track: bpy.props.BoolProperty(name="track", default=False, update=lambda self, context: self.update())
-    debug_check: bpy.props.BoolProperty(name="checkline", description="activate debug artiste", default=False,
-                                        update=lambda self, context: self.update())
+    times: bpy.props.IntProperty(name="start", default=60, min=1, update=lambda self, context: self.update())
+    tracks: bpy.props.StringProperty(name="track", default="hacienda", update=lambda self, context: self.update())
+    laps: bpy.props.IntProperty(name="laps", default=3, min=1, update=lambda self, context: self.update())
+    karts: bpy.props.IntProperty(name="Karts", default=4, min=0, max=20, update=lambda self, context: self.update())
 
     def init(self, context):
         self.node_input("NodeSocketString", "input_0", "", "")
-        self.node_output('NodeSocketString', 'output_0', '', "")
+        self.node_output("NodeSocketString", "output_0", "", "")
 
     def draw_buttons(self, context, layout):
-        ligne = layout.row()
-        ligne.prop(self, "debug_check")
-        ligne.prop(self, "debug_track")
+        layout.prop(self, "times")
+        layout.prop(self, "tracks")
+        layout.prop(self, "laps")
+        layout.prop(self, "karts")
 
     def process(self, context, id, path):
         # Check for input socket existence
@@ -51,15 +53,15 @@ class STK_debug_track(node):
 
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
-            self.s_output = ""
+            instruction = ""
             if self.s_input != "":
-                self.s_output += self.s_input + " "
-            if self.debug_check != False:
-                self.s_output += f" --check-debug"
-            if self.debug_track != False:
-                self.s_output += f" --track-debug"
-            self.outputs[0].default_value = str(self.s_output)
+                instruction += self.s_input + " "
+            instruction += f"--demo-mode={self.times} --demo-tracks={self.tracks} --demo-laps={self.laps} --demo-karts={self.karts}"
+            self.outputs[0].default_value = instruction
+            return instruction
+
         return self.s_output
 
     def update(self):
+        """Called when the node needs to be updated"""
         self.process(bpy.context, None, None)

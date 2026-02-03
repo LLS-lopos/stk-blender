@@ -3,26 +3,50 @@ import bpy
 from ...base.node_base import node
 
 
-class STK_debug_track(node):
-    bl_idname = 'STK_Debug_Track'
-    bl_label = 'Debug Track'
+class STK_leader(node):
+    bl_idname = 'STK_follow_leader'
+    bl_label = 'Leader'
     bl_icon = 'NONE'
 
     s_input: bpy.props.StringProperty(name="input", default="")
     s_output: bpy.props.StringProperty(name="output", default="")
 
-    debug_track: bpy.props.BoolProperty(name="track", default=False, update=lambda self, context: self.update())
-    debug_check: bpy.props.BoolProperty(name="checkline", description="activate debug artiste", default=False,
-                                        update=lambda self, context: self.update())
+    num_kart: bpy.props.IntProperty(
+        name="N_karts",
+        default=3,
+        min=0,
+        max=20,
+        update=lambda self, context: self.update())
+
+    choise_kart: bpy.props.StringProperty(
+        name="Kart User",
+        description="Select a kart",
+        default="tux",
+        update=lambda self, context: self.update()
+    )
+    choise_track: bpy.props.StringProperty(
+        name="Track Choice",
+        description="Select a track",
+        default="hacienda",
+        update=lambda self, context: self.update()
+    )
+
+    reverse: bpy.props.BoolProperty(name="Reverse Track", default=False, update=lambda self, context: self.update())
 
     def init(self, context):
         self.node_input("NodeSocketString", "input_0", "", "")
-        self.node_output('NodeSocketString', 'output_0', '', "")
+        self.node_output('NodeSocketString', 'output_0', 'leader', "")
 
     def draw_buttons(self, context, layout):
         ligne = layout.row()
-        ligne.prop(self, "debug_check")
-        ligne.prop(self, "debug_track")
+        ligne.prop(self, "reverse")
+        ligne.prop(self, "num_kart")
+
+        ligne = layout.row()
+        ligne.prop(self, "choise_track")
+
+        ligne = layout.row()
+        ligne.prop(self, "choise_kart")
 
     def process(self, context, id, path):
         # Check for input socket existence
@@ -52,12 +76,14 @@ class STK_debug_track(node):
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
             self.s_output = ""
-            if self.s_input != "":
-                self.s_output += self.s_input + " "
-            if self.debug_check != False:
-                self.s_output += f" --check-debug"
-            if self.debug_track != False:
-                self.s_output += f" --track-debug"
+            if self.s_input != "": self.s_output += self.s_input + " "
+            self.s_output += f"--numkarts={self.num_kart}"
+
+            if self.choise_track != "": self.s_output += f" --track={self.choise_track}"
+            if self.choise_kart != "": self.s_output += f" --kart={self.choise_kart}"
+            if self.reverse != False: self.s_output += f" --reverse"
+
+            self.s_output += f" --mode=4"
             self.outputs[0].default_value = str(self.s_output)
         return self.s_output
 

@@ -1,87 +1,69 @@
 bl_info = {
     "name": "STK RUNNER",
-    "author": "Ludérïck Le Saouter @LLS",
+    "author": "LLS",
     "version": (1, 0),
-    "blender": (2, 90, 0),
+    "blender": (2, 80, 0),
     "category": "Node",
-    "description": "éditeur orienté test d'actif pour SuperTuxKart",
-    "location": "Node Editor > STK RUNNER",
+    "description": "nodal editor test SuperTuxKart Project",
+    "location": "Node Editor > STK Run Test",
 }
 
 import bpy
-
-from .base import (node, menu, editor, NPanel_editor)
-from .node.debug import (controller, kart, other, track, graphique)
-from .node.experimental import (egg_info, decimal, vec_decimal)
-from .node.mode import (
-    battle_info, capture_flag_info,
-    cutscene_info, leader_info, race_info,
-    soccer_info, time_trial)
-from .node.option import (cli, demo_info, graphic, initial_info, windows)
-from .node.run import (preview_info, runner)
+from .base import (node_base, menu, node_editor)
+from .node.init import (cli, init_stk, demo_info, graphic, windows)
+from .node.run import (runner, preview_cmd)
+from .node.mode import (racing, leader, time_trial, battle, capture_flag, cutscene, egg_party, soccer)
+from .node.debug import (direct_run, controller, graphic_d, kart, track)
 
 classes = (
-    editor.STKeditor,
-    menu.STKmenu,
-    menu.STKoption,
-    menu.STKrun,
-    menu.STKexperimental,
+    node_editor.STKeditor,
+    menu.STKoperator,
+    menu.STKmode, 
     menu.STKdebug,
-    node.node,
-    battle_info.STK_battle,
-    capture_flag_info.STK_capture_flag,
+    node_base.node,
+    init_stk.STK_initial,
+    init_stk.STK_Pick_Executable_Operator,
+    init_stk.STK_Pick_TracksFolder_Operator,
+    init_stk.STK_Pick_kartsFolder_Operator,
     cli.STK_cli,
-    cutscene_info.STK_cut_scene,
-    demo_info.STK_demo_mode,
-    egg_info.STK_egg_paty,
-    graphic.STK_graphic,
-    initial_info.STK_initial,
-    initial_info.STK_Pick_Executable_Operator,
-    initial_info.STK_Pick_TracksFolder_Operator,
-    initial_info.STK_Pick_kartsFolder_Operator,
-    leader_info.STK_leader,
-    preview_info.STK_info,
-    race_info.STK_race,
     runner.STK_run,
     runner.STK_OT_RunStk,
-    soccer_info.STK_soccer,
-    time_trial.STK_time_trial,
+    preview_cmd.STK_info,
+    demo_info.STK_demo_mode,
     windows.STK_windows,
+    graphic.STK_graphic,
+    racing.STK_race,
+    leader.STK_leader,
+    time_trial.STK_time_trial,
+    direct_run.STK_direct_run,
     controller.STK_debug_controller,
+    graphic_d.STK_debug_graphique,
     kart.STK_debug_kart,
-    other.STK_debug_other,
     track.STK_debug_track,
-    graphique.STK_debug_graphique,
-    decimal.Decimal,
-    vec_decimal.VecDecimal,
-    NPanel_editor.STKpanel,
-    NPanel_editor.STK_modif_config,
-    NPanel_editor.STK_config_file1,
-    NPanel_editor.STK_config_file2,
+    battle.STK_battle,
+    cutscene.STK_cut_scene,
+    capture_flag.STK_capture_flag,
+    egg_party.STK_egg_party,
+    soccer.STK_soccer,
 )
 
-
 def add_stk_node_menu(self, context):
-    if context.space_data.tree_type != editor.STKeditor.bl_idname:
-        return
+    if context.space_data.tree_type != node_editor.STKeditor.bl_idname: return
+    self.layout.menu(menu.STKoperator.bl_idname)
+    self.layout.menu(menu.STKmode.bl_idname)
     self.layout.menu(menu.STKdebug.bl_idname)
-    self.layout.menu(menu.STKmenu.bl_idname)
-    self.layout.menu(menu.STKoption.bl_idname)
-    self.layout.menu(menu.STKrun.bl_idname)
-    self.layout.menu(menu.STKexperimental.bl_idname)
-
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     bpy.types.NODE_MT_add.append(add_stk_node_menu)
-    bpy.app.handlers.depsgraph_update_post.append(editor.STKeditor.update_scene_handler)
-
+    bpy.app.handlers.depsgraph_update_post.append(node_editor.STKeditor.update_scene_handler)
 
 def unregister():
     bpy.types.NODE_MT_add.remove(add_stk_node_menu)
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+    bpy.app.handlers.depsgraph_update_post.remove(node_editor.STKeditor.update_scene_handler)
 
 
 if __name__ == "__main__":

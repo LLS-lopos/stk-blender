@@ -1,28 +1,24 @@
 import bpy
-
 from ...base.node_base import node
 
 
-class STK_debug_track(node):
-    bl_idname = 'STK_Debug_Track'
-    bl_label = 'Debug Track'
+class STK_debug_graphique(node):
+    bl_idname = "STK_Debug_Graphique"
+    bl_label = 'Debug Graphique'
     bl_icon = 'NONE'
 
     s_input: bpy.props.StringProperty(name="input", default="")
     s_output: bpy.props.StringProperty(name="output", default="")
 
-    debug_track: bpy.props.BoolProperty(name="track", default=False, update=lambda self, context: self.update())
-    debug_check: bpy.props.BoolProperty(name="checkline", description="activate debug artiste", default=False,
-                                        update=lambda self, context: self.update())
+    fps: bpy.props.BoolProperty(name="FPS", default=False, update=lambda self, context: self.update())
 
     def init(self, context):
         self.node_input("NodeSocketString", "input_0", "", "")
         self.node_output('NodeSocketString', 'output_0', '', "")
 
     def draw_buttons(self, context, layout):
-        ligne = layout.row()
-        ligne.prop(self, "debug_check")
-        ligne.prop(self, "debug_track")
+        ligne = layout.box()
+        ligne.prop(self, "fps")
 
     def process(self, context, id, path):
         # Check for input socket existence
@@ -54,12 +50,10 @@ class STK_debug_track(node):
             self.s_output = ""
             if self.s_input != "":
                 self.s_output += self.s_input + " "
-            if self.debug_check != False:
-                self.s_output += f" --check-debug"
-            if self.debug_track != False:
-                self.s_output += f" --track-debug"
+
+            if self.fps: self.s_output += f"--fps-debug"
             self.outputs[0].default_value = str(self.s_output)
         return self.s_output
 
     def update(self):
-        self.process(bpy.context, None, None)
+        return super().update()

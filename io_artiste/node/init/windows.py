@@ -1,6 +1,6 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
 class STK_windows(node):
@@ -8,8 +8,8 @@ class STK_windows(node):
     bl_label = 'Windows'
     bl_icon = 'WINDOW'
 
-    entrer: bpy.props.StringProperty(name="input", default="")
-    sortie: bpy.props.StringProperty(name="output", default="")
+    s_input: bpy.props.StringProperty(name="input", default="")
+    s_output: bpy.props.StringProperty(name="output", default="")
 
     win_largeur: bpy.props.IntProperty(name="width", update=lambda self, context: self.update())
     win_hauteur: bpy.props.IntProperty(name="height", update=lambda self, context: self.update())
@@ -31,8 +31,8 @@ class STK_windows(node):
         default="custom", update=lambda self, context: self.update())
 
     def init(self, context):
-        self.node_entrer("NodeSocketString", "input_0", "", "")
-        self.node_sortie('NodeSocketString', 'output_0', '', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output('NodeSocketString', 'output_0', '', "")
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "plein_ecran")
@@ -57,33 +57,33 @@ class STK_windows(node):
                     if hasattr(from_node, "process"):
                         try:
                             value = from_node.process(context, id, path)
-                            self.entrer = str(value)
+                            self.s_input = str(value)
                         except:
                             pass
 
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
-                        self.entrer = str(from_socket.default_value)
+                        self.s_input = str(from_socket.default_value)
             else:
-                self.entrer = ""
+                self.s_input = ""
 
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
-            self.sortie = ""
-            if self.entrer != "":
-                self.sortie += self.entrer + " "
+            self.s_output = ""
+            if self.s_input != "":
+                self.s_output += self.s_input + " "
 
             if self.plein_ecran == True:
-                self.sortie += f"--fullscreen"
+                self.s_output += f"--fullscreen"
             else:
-                self.sortie += f"--windowed"
+                self.s_output += f"--windowed"
             if self.win_size == "custom":
-                self.sortie += f" --screensize={self.win_largeur}x{self.win_hauteur}"
+                self.s_output += f" --screensize={self.win_largeur}x{self.win_hauteur}"
             else:
-                self.sortie += f" --screensize={self.win_size}"
+                self.s_output += f" --screensize={self.win_size}"
 
-            self.outputs[0].default_value = str(self.sortie)
-        return self.sortie
+            self.outputs[0].default_value = str(self.s_output)
+        return self.s_output
 
     def update(self):
         self.process(bpy.context, None, None)

@@ -1,6 +1,6 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
 class STK_info(node):
@@ -9,15 +9,12 @@ class STK_info(node):
     bl_icon = 'INFO'
 
     # Property to store the value to display
-    doc: bpy.props.StringProperty(
-        name="Value",
-        description="Value to display",
-        default=""
-    )
+    doc: bpy.props.StringProperty(name="Value", description="Value to display",
+        default="", update=lambda self, context: self.update())
 
     def init(self, context):
         # Create input socket
-        self.node_entrer("NodeSocketString", "info_input", "Info", "")
+        self.node_input("NodeSocketString", "info_input", "Info", "")
 
     def draw_buttons(self, context, layout):
         # Display the value in the interface

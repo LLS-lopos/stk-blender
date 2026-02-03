@@ -1,28 +1,26 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
-class STK_debug_other(node):
-    bl_idname = 'STK_Debug_Other'
-    bl_label = 'Other Debug'
+class STK_direct_run(node):
+    bl_idname = 'STK_Direct_Run'
+    bl_label = 'Direct Run'
     bl_icon = 'NONE'
 
-    entrer: bpy.props.StringProperty(name="input", default="")
-    sortie: bpy.props.StringProperty(name="output", default="")
+    s_input: bpy.props.StringProperty(name="input", default="")
+    s_output: bpy.props.StringProperty(name="output", default="")
 
-    fps: bpy.props.BoolProperty(name="FPS", default=False, update=lambda self, context: self.update())
     race_now: bpy.props.BoolProperty(name="Race Now", default=False, update=lambda self, context: self.update())
     start_screen: bpy.props.BoolProperty(name="No Start Screen", default=False,
                                          update=lambda self, context: self.update())
 
     def init(self, context):
-        self.node_entrer("NodeSocketString", "input_0", "", "")
-        self.node_sortie('NodeSocketString', 'output_0', '', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output('NodeSocketString', 'output_0', '', "")
 
     def draw_buttons(self, context, layout):
         ligne = layout.box()
-        # ligne.prop(self, "fps")
         ligne.prop(self, "race_now")
         ligne.prop(self, "start_screen")
 
@@ -41,28 +39,28 @@ class STK_debug_other(node):
                     if hasattr(from_node, "process"):
                         try:
                             value = from_node.process(context, id, path)
-                            self.entrer = str(value)
+                            self.s_input = str(value)
                         except:
                             pass
 
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
-                        self.entrer = str(from_socket.default_value)
+                        self.s_input = str(from_socket.default_value)
             else:
-                self.entrer = ""
+                self.s_input = ""
 
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
-            self.sortie = ""
-            if self.entrer != "":
-                self.sortie += self.entrer + " "
+            self.s_output = ""
+            if self.s_input != "":
+                self.s_output += self.s_input + " "
 
-            if self.fps: self.sortie += f"--fps-debug"
-            if self.start_screen: self.sortie += f" --no-start-screen"
-            if self.race_now: self.sortie += f" --race-now"
+            
+            if self.start_screen: self.s_output += f" --no-start-screen"
+            if self.race_now: self.s_output += f" --race-now"
 
-            self.outputs[0].default_value = str(self.sortie)
-        return self.sortie
+            self.outputs[0].default_value = str(self.s_output)
+        return self.s_output
 
     def update(self):
         self.process(bpy.context, None, None)

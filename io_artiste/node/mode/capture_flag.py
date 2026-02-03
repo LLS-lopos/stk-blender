@@ -1,6 +1,6 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
 class STK_capture_flag(node):
@@ -102,8 +102,8 @@ class STK_capture_flag(node):
     custom_kart: bpy.props.StringProperty(name="Other kart", default="", update=lambda self, context: self.update())
 
     def init(self, context):
-        self.node_entrer("NodeSocketString", "input_0", "", "")
-        self.node_sortie('NodeSocketString', 'output_0', '', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output('NodeSocketString', 'output_0', '', "")
 
     def draw_buttons(self, context, layout):
         # layout.prop(self, "num_kart")

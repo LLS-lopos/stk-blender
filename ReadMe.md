@@ -93,7 +93,16 @@ Note that these tutorials may not yet be updated for Blender 2.80 and later, but
 
 * Tracks: <https://supertuxkart.net/Making_Tracks>
 
+
+# Test These Creations
+
 ## io_artiste
+
+io_artiste offers a node editor specifically for launching test creations via various nodes divided into three categories.
+
+- operator : are essential nodes for launching the test(s)
+- mode : launches the different existing game modes
+- debug : debug and additional options
 
 ### personnal editor
 
@@ -103,13 +112,13 @@ Note that these tutorials may not yet be updated for Blender 2.80 and later, but
 |🟠    |warning (functional/final function not defined)                               |
 |🔴    |bad (no internal function but will cause no problem in case of accidental use)|
 
-
 - menu:
   - STK DEBUG:
     - node:
       - 🟠 Controller
+      - 🟠 Graphic
       - 🔴 Kart
-      - 🟠 Other
+      - 🟠 Direct Run
       - 🟠 Track
   - STK MODE:
     - node:
@@ -120,17 +129,18 @@ Note that these tutorials may not yet be updated for Blender 2.80 and later, but
       - 🟢 Racing
       - 🟠 Soccer
       - 🟢 Time Trial
-  - STK OPTION:
-    - node:
-      - 🟢 CLI
-      - 🟢 DEMO Mode
-      - 🟠 Graphic
-      - 🟠 Init
-      - 🟠 Windows
-  - STK RUN:
+      - 🔴 Egg Party
+      
+  - STK OPERATOR:
     - node:
       - 🟢 Info
       - 🟢 Go Run Test
-  - STK EXPERIMENTAL:
-    - node:
-      - 🔴 Egg Party
+      - 🟢 CLI
+      - 🟢 DEMO Mode
+      - 🟠 Graphic
+      - 🟢 Init
+      - 🟢 Windows
+
+# Render Antartica In Blender
+
+io_supertuxkart_engine is a enbisious project of render engine blender of SuperTuxKart

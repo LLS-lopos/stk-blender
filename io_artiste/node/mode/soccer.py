@@ -1,28 +1,19 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
-class STK_battle(node):
-    bl_idname = 'STK_Battle'
-    bl_label = 'Battle'
+class STK_soccer(node):
+    bl_idname = 'STK_Soccer'
+    bl_label = 'Soccer'
     bl_icon = 'NONE'
 
     entrer: bpy.props.StringProperty(name="input", default="")
     sortie: bpy.props.StringProperty(name="output", default="")
 
-    num_kart_custom: bpy.props.IntProperty(
+    num_kart: bpy.props.IntProperty(
         name="N_karts",
-        default=3, min=1, max=30, update=lambda self, context: self.update())
-    num_kart_10: bpy.props.IntProperty(
-        name="N_karts",
-        default=3, min=1, max=10, update=lambda self, context: self.update())
-    num_kart_6: bpy.props.IntProperty(
-        name="N_karts",
-        default=3, min=1, max=6, update=lambda self, context: self.update())
-    num_kart_4: bpy.props.IntProperty(
-        name="N_karts",
-        default=3, min=1, max=4, update=lambda self, context: self.update())
+        default=3, min=1, max=20, update=lambda self, context: self.update())
 
     choix_kart: bpy.props.EnumProperty(
         name="Kart User",
@@ -55,39 +46,28 @@ class STK_battle(node):
         name="Track Choice",
         description="Select a track",
         items=[
-            ("alien_signal", "Alien Signal", "Battle track", "", 0),
-            ("ancient_colosseum_labyrinth", "Ancient Colosseum Labyrinth", "Battle track", "", 1),
-            ("arena_candela_city", "Arena Candela City", "Battle track", "", 2),
-            ("battleisland", "Battle Island", "Battle track", "", 3),
-            ("cave", "Cave", "Battle track", "", 4),
-            ("lasdunasarena", "Las Dunas Arena", "Battle track", "", 5),
-            ("pumpkin_park", "Pumpkin Park", "", "Battle track", 6),
-            ("stadium", "Stadium", "Battle track", "", 7),
-            ("temple", "Temple", "Battle track", "", 8),
-            ("custom", "Custom", "Custom Track", "", 9)
+            ("hole_drop", "Hole Drop", "Soccer track", "", 0),
+            ("icy_soccer_field", "Icy Soccer Field", "Soccer track", "", 1),
+            ("lasdunassoccer", "Las Dunas Soccer", "Soccer track", "", 2),
+            ("oasis", "Oasis", "Soccer track", "", 3),
+            ("soccer_field", "Soccer Field", "Soccer track", "", 4),
+            ("custom", "Custom", "Custom Track", "", 5)
         ],
         default="custom",
         update=lambda self, context: self.update()
     )
 
+    time_limit: bpy.props.IntProperty(name="time limite(s)", description="time define in seconde", default=600,
+                                      update=lambda self, context: self.update())
     custom_track: bpy.props.StringProperty(name="Other track", default="", update=lambda self, context: self.update())
     custom_kart: bpy.props.StringProperty(name="Other kart", default="", update=lambda self, context: self.update())
 
     def init(self, context):
-        self.node_entrer("NodeSocketString", "input_0", "", "")
-        self.node_sortie('NodeSocketString', 'Battle', 'battle', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output('NodeSocketString', 'output_0', '', "")
 
     def draw_buttons(self, context, layout):
-        ligne = layout.row()
-        if self.choix_track in {"alien_signal", "ancient_colosseum_labyrinth", "arena_candela_city", "lasdunasarena",
-                                "pumpkin_park", "stadium", "temple"}:
-            ligne.prop(self, "num_kart_10")
-        elif self.choix_track in {"battleisland"}:
-            ligne.prop(self, "num_kart_6")
-        elif self.choix_track in {"cave"}:
-            ligne.prop(self, "num_kart_4")
-        else:
-            ligne.prop(self, "num_kart_custom")
+        layout.prop(self, "num_kart")
 
         ligne = layout.row()
         ligne.prop(self, "choix_track")
@@ -98,6 +78,9 @@ class STK_battle(node):
         ligne.prop(self, "choix_kart")
         if self.choix_kart == "custom":
             ligne.prop(self, "custom_kart")
+
+        ligne = layout.row()
+        ligne.prop(self, "time_limit")
 
     def process(self, context, id, path):
         # Check for input socket existence
@@ -130,25 +113,19 @@ class STK_battle(node):
             if self.entrer != "":
                 self.sortie += self.entrer + " "
 
-            if self.choix_track in {"alien_signal", "ancient_colosseum_labyrinth", "arena_candela_city",
-                                    "lasdunasarena", "pumpkin_park", "stadium", "temple"}:
-                self.sortie += f"--numkarts={self.num_kart_10}"
-            elif self.choix_track in {"battleisland"}:
-                self.sortie += f"--numkarts={self.num_kart_6}"
-            elif self.choix_track in {"cave"}:
-                self.sortie += f"--numkarts={self.num_kart_4}"
-            else:
-                self.sortie += f"--numkarts={self.num_kart_custom}"
+            self.sortie += f" --numkarts={self.num_kart}"
 
             if self.choix_track != "custom":
                 self.sortie += f" --track={self.choix_track}"
             else:
                 self.sortie += f" --track={self.custom_track}"
+
             if self.choix_kart != "custom":
                 self.sortie += f" --kart={self.choix_kart}"
             else:
                 self.sortie += f" --kart={self.custom_kart}"
-            self.sortie += f" --mode=2"
+            self.sortie += f" --time-limit={self.time_limit}"
+            self.sortie += f" --mode=3"
             self.outputs[0].default_value = str(self.sortie)
         return self.sortie
 

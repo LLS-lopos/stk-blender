@@ -1,22 +1,28 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
-class STK_leader(node):
-    bl_idname = 'STK_follow_leader'
-    bl_label = 'Leader'
+class STK_battle(node):
+    bl_idname = 'STK_Battle'
+    bl_label = 'Battle'
     bl_icon = 'NONE'
 
     entrer: bpy.props.StringProperty(name="input", default="")
     sortie: bpy.props.StringProperty(name="output", default="")
 
-    num_kart: bpy.props.IntProperty(
+    num_kart_custom: bpy.props.IntProperty(
         name="N_karts",
-        default=3,
-        min=0,
-        max=20,
-        update=lambda self, context: self.update())
+        default=3, min=1, max=30, update=lambda self, context: self.update())
+    num_kart_10: bpy.props.IntProperty(
+        name="N_karts",
+        default=3, min=1, max=10, update=lambda self, context: self.update())
+    num_kart_6: bpy.props.IntProperty(
+        name="N_karts",
+        default=3, min=1, max=6, update=lambda self, context: self.update())
+    num_kart_4: bpy.props.IntProperty(
+        name="N_karts",
+        default=3, min=1, max=4, update=lambda self, context: self.update())
 
     choix_kart: bpy.props.EnumProperty(
         name="Kart User",
@@ -49,28 +55,16 @@ class STK_leader(node):
         name="Track Choice",
         description="Select a track",
         items=[
-            ("abyss", "Abyss", "Race track", "", 0),
-            ("black_forest", "Black Forest", "Race track", "", 1),
-            ("candela_city", "Candela City", "Race track", "", 2),
-            ("cocoa_temple", "Cocoa Temple", "Race track", "", 3),
-            ("cornfiel_crossing", "Cornfield Crossing", "Race track", "", 4),
-            ("fortmagma", "Fort Magma", "Race track", "", 5),
-            ("gran_paradiso_island", "Gran Paradiso Island", "Race track", "", 6),
-            ("hacienda", "Hacienda", "Race track", "", 7),
-            ("lighthouse", "Light House", "Race track", "", 8),
-            ("mines", "Mines", "Race track", "", 9),
-            ("minigolf", "Mini Golf", "Race track", "", 10),
-            ("olivermath", "Oliver Math", "Race track", "", 11),
-            ("ravenbridge_mansion", "Ravenbridge Mansion", "Race track", "", 12),
-            ("sandtrack", "Sand Track", "Race track", "", 13),
-            ("scotland", "Scotland", "Race track", "", 14),
-            ("snowmountain", "Snow Mountain", "Race track", "", 15),
-            ("snowtuxpeak", "Snow Tux Peak", "Race track", "", 16),
-            ("stk_entreprise", "STK Entreprise", "Race track", "", 17),
-            ("volcano_island", "Volcano Island", "Race track", "", 18),
-            ("xr591", "XR591", "Race track", "", 19),
-            ("zengarden", "Zen Garden", "Race track", "", 20),
-            ("custom", "Custom", "Custom Track", "", 21)
+            ("alien_signal", "Alien Signal", "Battle track", "", 0),
+            ("ancient_colosseum_labyrinth", "Ancient Colosseum Labyrinth", "Battle track", "", 1),
+            ("arena_candela_city", "Arena Candela City", "Battle track", "", 2),
+            ("battleisland", "Battle Island", "Battle track", "", 3),
+            ("cave", "Cave", "Battle track", "", 4),
+            ("lasdunasarena", "Las Dunas Arena", "Battle track", "", 5),
+            ("pumpkin_park", "Pumpkin Park", "", "Battle track", 6),
+            ("stadium", "Stadium", "Battle track", "", 7),
+            ("temple", "Temple", "Battle track", "", 8),
+            ("custom", "Custom", "Custom Track", "", 9)
         ],
         default="custom",
         update=lambda self, context: self.update()
@@ -78,16 +72,22 @@ class STK_leader(node):
 
     custom_track: bpy.props.StringProperty(name="Other track", default="", update=lambda self, context: self.update())
     custom_kart: bpy.props.StringProperty(name="Other kart", default="", update=lambda self, context: self.update())
-    reverse: bpy.props.BoolProperty(name="Reverse Track", default=False, update=lambda self, context: self.update())
 
     def init(self, context):
-        self.node_entrer("NodeSocketString", "input_0", "", "")
-        self.node_sortie('NodeSocketString', 'output_0', 'leader', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output('NodeSocketString', 'Battle', 'battle', "")
 
     def draw_buttons(self, context, layout):
         ligne = layout.row()
-        ligne.prop(self, "reverse")
-        ligne.prop(self, "num_kart")
+        if self.choix_track in {"alien_signal", "ancient_colosseum_labyrinth", "arena_candela_city", "lasdunasarena",
+                                "pumpkin_park", "stadium", "temple"}:
+            ligne.prop(self, "num_kart_10")
+        elif self.choix_track in {"battleisland"}:
+            ligne.prop(self, "num_kart_6")
+        elif self.choix_track in {"cave"}:
+            ligne.prop(self, "num_kart_4")
+        else:
+            ligne.prop(self, "num_kart_custom")
 
         ligne = layout.row()
         ligne.prop(self, "choix_track")
@@ -129,7 +129,17 @@ class STK_leader(node):
             self.sortie = ""
             if self.entrer != "":
                 self.sortie += self.entrer + " "
-            self.sortie += f"--numkarts={self.num_kart}"
+
+            if self.choix_track in {"alien_signal", "ancient_colosseum_labyrinth", "arena_candela_city",
+                                    "lasdunasarena", "pumpkin_park", "stadium", "temple"}:
+                self.sortie += f"--numkarts={self.num_kart_10}"
+            elif self.choix_track in {"battleisland"}:
+                self.sortie += f"--numkarts={self.num_kart_6}"
+            elif self.choix_track in {"cave"}:
+                self.sortie += f"--numkarts={self.num_kart_4}"
+            else:
+                self.sortie += f"--numkarts={self.num_kart_custom}"
+
             if self.choix_track != "custom":
                 self.sortie += f" --track={self.choix_track}"
             else:
@@ -138,9 +148,7 @@ class STK_leader(node):
                 self.sortie += f" --kart={self.choix_kart}"
             else:
                 self.sortie += f" --kart={self.custom_kart}"
-            if self.reverse != False:
-                self.sortie += f" --reverse"
-            self.sortie += f" --mode=4"
+            self.sortie += f" --mode=2"
             self.outputs[0].default_value = str(self.sortie)
         return self.sortie
 

@@ -1,6 +1,6 @@
 import bpy
 
-from ...base.node import node
+from ...base.node_base import node
 
 
 class STK_debug_kart(node):
@@ -8,12 +8,12 @@ class STK_debug_kart(node):
     bl_label = 'Debug Kart'
     bl_icon = 'NONE'
 
-    entrer: bpy.props.StringProperty(name="input", default="")
-    sortie: bpy.props.StringProperty(name="output", default="")
+    s_input: bpy.props.StringProperty(name="input", default="")
+    s_output: bpy.props.StringProperty(name="output", default="")
 
     def init(self, context):
-        self.node_entrer("NodeSocketString", "input_0", "", "")
-        self.node_sortie('NodeSocketString', 'output_0', '', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output('NodeSocketString', 'output_0', '', "")
 
     def draw_buttons(self, context, layout):
         ligne = layout.row()
@@ -34,24 +34,24 @@ class STK_debug_kart(node):
                     if hasattr(from_node, "process"):
                         try:
                             value = from_node.process(context, id, path)
-                            self.entrer = str(value)
+                            self.s_input = str(value)
                         except:
                             pass
 
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
-                        self.entrer = str(from_socket.default_value)
+                        self.s_input = str(from_socket.default_value)
             else:
-                self.entrer = ""
+                self.s_input = ""
 
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
-            self.sortie = ""
-            if self.entrer != "":
-                self.sortie += self.entrer + " "
+            self.s_output = ""
+            if self.s_input != "":
+                self.s_output += self.s_input + " "
 
-            self.outputs[0].default_value = str(self.sortie)
-        return self.sortie
+            self.outputs[0].default_value = str(self.s_output)
+        return self.s_output
 
     def update(self):
         self.process(bpy.context, None, None)
