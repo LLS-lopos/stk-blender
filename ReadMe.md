@@ -143,4 +143,4 @@ io_artiste offers a node editor specifically for launching test creations via va
 
 # Render Antartica In Blender
 
-io_supertuxkart_engine is a enbisious project of render engine blender of SuperTuxKart
+io_supertuxkart_engine is an ambitious project for the SuperTuxKart Antartica rendering engine in Blender
