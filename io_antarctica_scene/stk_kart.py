@@ -35,16 +35,33 @@ from . import stk_utils
 # ------------------------------------------------------------------------------
 # Save nitro emitter
 def saveNitroEmitter(self, f, lNitroEmitter, path):
-    # check if there are 2 nitro emitter
-    if len(lNitroEmitter) != 2:
+    if len(lNitroEmitter) > 2:
         self.report({'WARNING'}, " %d nitro emitter specified. Up to 2 are allowed." % len(lNitroEmitter))
         return
-    f.write('  <nitro-emitter>\n')
-    f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
-            % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
-    f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
-            % (lNitroEmitter[1].location.x, lNitroEmitter[1].location.z, lNitroEmitter[1].location.y))
-    f.write('  </nitro-emitter>\n')
+    if len(lNitroEmitter) > 0:
+        f.write('  <nitro-emitter>\n')
+        letters = ['a', 'b']
+        for i, nitro in enumerate(lNitroEmitter):  # i is object index
+            f.write('    <nitro-emitter-%s position = "%f %f %f" />\n' \
+                    % (letters[i], nitro.location.x, nitro.location.z, nitro.location.y))
+            if i == 1:
+                f.write('  </nitro-emitter>\n')
+    if len(lNitroEmitter) == 1:
+        f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
+                    % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
+        f.write('  </nitro-emitter>\n')
+    #if len(lNitroEmitter) > 0:	
+	    #f.write('  <nitro-emitter>\n')
+	    #f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
+	    #        % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
+	    #f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
+	    #        % (lNitroEmitter[1].location.x, lNitroEmitter[1].location.z, lNitroEmitter[1].location.y))
+	    #f.write('  </nitro-emitter>\n')
+    #else:
+     #   f.write('  <nitro-emitter>\n')
+	  #  f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
+	   #         % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
+	    #f.write('  </nitro-emitter>\n')
 
 
 # ------------------------------------------------------------------------------
@@ -52,6 +69,7 @@ def saveNitroEmitter(self, f, lNitroEmitter, path):
 def saveHeadlights(self, f, lHeadlights, path, straight_frame):
     if len(lHeadlights) == 0:
         return
+
     f.write('  <headlights>\n')
     instancing_objects = {}
     for obj in lHeadlights:
@@ -173,11 +191,13 @@ def saveSpeedWeighted(self, f, lSpeedWeighted, path, straight_frame):
 
 
 # ------------------------------------------------------------------------------
-# Save the wheels if 4 wheel exist
+# Save the wheels if 1-4 wheel exist
 def saveWheels(self, f, lWheels, path):
-    if len(lWheels) != 4:
-        self.report({'WARNING'}, "%d wheels specified. Up to 4 are allowed." % len(lWheels))
+    if len(lWheels) == 0:
         return
+
+    if len(lWheels) > 4:
+        self.report({'WARNING'}, "%d wheels specified. Up to 4 are allowed." % len(lWheels))
 
     lWheelNames = ("wheel-front-right.spm", "wheel-front-left.spm",
                    "wheel-rear-right.spm", "wheel-rear-left.spm")
@@ -236,17 +256,16 @@ def saveAnimations(self, f, kart_version, export_version):
                 # in their blends but still make the kart available for 1.x users.
                 # This will remain the case in the foreseeable future. 
                 if export_version == 3:
-                    if markerName in \
-                            ["straight", "right", "left", "start-winning", "start-winning-loop",
-                             "end-winning", "end-winning-straight", "start-losing", "start-losing-loop", "end-losing",
-                             "end-losing-straight",
-                             "start-jump", "start-jump-loop", "end-jump",
-                             "backpedal-left", "backpedal", "backpedal-right", "selection-start", "selection-end",
-                             "winning-start", "winning-loop-start", "winning-loop-end", "winning-to-straight",
-                             "losing-start", "losing-loop-start", "losing-loop-end", "losing-to-straight",
-                             "jump-start", "jump-loop-start", "jump-loop-end",
-                             "selection-loop-start", "selection-loop-end"]:
-                        if markerName == "straight": straight_frame = i
+                    if  markerName in \
+                       ["straight", "right", "left", "start-winning", "start-winning-loop",
+                        "end-winning", "end-winning-straight", "start-losing", "start-losing-loop", "end-losing", "end-losing-straight",
+                        "start-jump", "start-jump-loop", "end-jump",
+                        "backpedal-left", "backpedal", "backpedal-right", "selection-start", "selection-end",
+                        "winning-start", "winning-loop-start", "winning-loop-end", "winning-to-straight",
+                        "losing-start", "losing-loop-start", "losing-loop-end", "losing-to-straight",
+                        "jump-start", "jump-loop-start", "jump-loop-end",
+                        "selection-loop-start", "selection-loop-end"]:
+                        if markerName == "straight" : straight_frame = i
                         # When exporting a v4 kart as a v3 kart, convert animation marker names
                         if markerName == "winning-start": markerName = "start-winning"
                         if markerName == "winning-loop-start": markerName = "start-winning-loop"
@@ -263,29 +282,28 @@ def saveAnimations(self, f, kart_version, export_version):
                             continue
                         if markerName == "selection-loop-start": markerName = "selection-start"
                         if markerName == "selection-loop-end": markerName = "selection-end"
-                        lAnims.append((markerName, i - 1))
+                        lAnims.append( (markerName, i-1) )
                         lMarkersFound.append(markerName)
                         # self.report({'INFO'}, "Kart exported with animation marker " + markerName)
                     # else:
                     # Disable by default to not have spurious warnings when exporting a v4 kart as v3
                     # self.report({'INFO'}, "Unrecognized marker " + markerName)
                 if export_version == 4:
-                    if markerName in \
-                            ["straight", "right", "left", "start-winning", "start-winning-loop",
-                             "end-winning", "end-winning-straight", "start-losing", "start-losing-loop", "end-losing",
-                             "end-losing-straight",
-                             "start-jump", "start-jump-loop", "end-jump",
-                             "backpedal-left", "backpedal", "backpedal-right", "selection-end",
-                             "winning-start", "winning-loop-start", "winning-loop-end", "winning-to-straight",
-                             "neutral-start", "neutral-loop-start", "neutral-loop-end",
-                             "losing-start", "losing-loop-start", "losing-loop-end", "losing-to-straight",
-                             "podium-start", "podium-loop-start", "podium-loop-end",
-                             "jump-start", "jump-loop-start", "jump-loop-end",
-                             "selection-start", "selection-loop-start", "selection-loop-end",
-                             "bump-front", "bump-left", "bump-right", "bump-back",
-                             "happy-start", "happy-end", "hit-start", "hit-end",
-                             "false-accel-start", "false-accel-end"]:
-                        if markerName == "straight": straight_frame = i
+                    if  markerName in \
+                       ["straight", "right", "left", "start-winning", "start-winning-loop",
+                        "end-winning", "end-winning-straight", "start-losing", "start-losing-loop", "end-losing", "end-losing-straight",
+                        "start-jump", "start-jump-loop", "end-jump",
+                        "backpedal-left", "backpedal", "backpedal-right", "selection-end",
+                        "winning-start", "winning-loop-start", "winning-loop-end", "winning-to-straight",
+                        "neutral-start", "neutral-loop-start", "neutral-loop-end",
+                        "losing-start", "losing-loop-start", "losing-loop-end", "losing-to-straight",
+                        "podium-start", "podium-loop-start", "podium-loop-end",
+                        "jump-start", "jump-loop-start", "jump-loop-end",
+                        "selection-start", "selection-loop-start", "selection-loop-end",
+                        "bump-front", "bump-left", "bump-right", "bump-back",
+                        "happy-start", "happy-end", "hit-start", "hit-end",
+                        "false-accel-start", "false-accel-end"]:
+                        if markerName == "straight" : straight_frame = i
                         # When exporting a v3 kart as a v4 kart, convert animation marker names
                         if markerName == "start-winning":
                             markerName = "winning-start"
@@ -305,7 +323,7 @@ def saveAnimations(self, f, kart_version, export_version):
                         if markerName == "start-losing-loop":
                             markerName = "losing-loop-start"
                             rename_count += 1
-                        if markerName == "end-losing":
+                        if markerName == "end-losing" :
                             markerName = "losing-loop-end"
                             rename_count += 1
                         if markerName == "end-losing-straight":
@@ -514,7 +532,7 @@ def exportKart(self, path):
             lSpeedWeighted.append(obj)
         elif stktype == "IGNORE":  # or obj.hide_render:
             pass
-        elif stktype == "HEADLIGHT" or stktype == "AUTO-HEADLIGHT":
+        elif stktype=="HEADLIGHT" or stktype=="AUTO-HEADLIGHT":
             lHeadlights.append(obj)
         elif stktype == "HAT":
             hat_object = obj
@@ -550,8 +568,7 @@ def exportKart(self, path):
 
     if 'skid_sound' in bpy.context.scene:
         skid_sound = bpy.context.scene['skid_sound']
-    else:
-        # Backwards compatibility
+    else:  # Backwards compatibility
         skid_sound = "default"
 
     if len(skid_sound) == 0:
@@ -684,24 +701,23 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
     bl_label = ("Export STK Kart")
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
 
-    def invoke(self, context, event):
+    @classmethod
+    def poll(self, context):  # poll checks whether the conditions are met to use the rest of the program
         # check that "is a Supertuxkart kart" is checked in the scene property settings
-        if 'is_stk_kart' not in context.scene or context.scene['is_stk_kart'] != 'true':
-            self.report({'ERROR'}, "Not a STK kart!")
-            return {'FINISHED'}
+        if 'is_stk_kart' in context.scene and context.scene['is_stk_kart'] == 'true':
+            return True
+        else:
+            return False
 
-        try:  # check that assets_path exits
-            assets_path = bpy.context.preferences.addons[
-                os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
-        except:
-            pass
-
+    def invoke(self, context, event):
+        # check that assets_path exits
+        assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
         if assets_path is None:
             self.report({'ERROR'}, "Please select the export path in the add-on preferences or quick exporter panel")
             return {'FINISHED'}
 
         # check if kart name devined 
-        if 'name' not in context.scene or len(context.scene['name']) == 0:
+        if len(context.scene['name']) == 0:
             self.report({'ERROR'}, "Please specify a name")
             return {'FINISHED'}
         code = context.scene['name']
@@ -718,15 +734,8 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
             # Return to object mode before exporting
             bpy.ops.object.mode_set(mode='OBJECT')
 
-        if self.filepath == "" or 'is_stk_kart' not in context.scene or context.scene['is_stk_kart'] != 'true':
+        if self.filepath == "":
             return {'FINISHED'}
 
         savescene_callback(self, context, self.filepath)
         return {'FINISHED'}
-
-    @classmethod
-    def poll(self, context):
-        if 'is_stk_kart' in context.scene and context.scene['is_stk_kart'] == 'true':
-            return True
-        else:
-            return False
