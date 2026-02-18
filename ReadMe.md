@@ -122,7 +122,7 @@ io_artiste offers a node editor specifically for launching test creations via va
       - 🟠 Track
   - STK MODE:
     - node:
-      - 🟠 Battle
+      - 🟢 Battle
       - 🟠 Capture Flag
       - 🟠 CutScene
       - 🟢 Leader
@@ -137,7 +137,7 @@ io_artiste offers a node editor specifically for launching test creations via va
       - 🟢 Go Run Test
       - 🟢 CLI
       - 🟢 DEMO Mode
-      - 🟠 Graphic
+      - 🟢 Graphic
       - 🟢 Init
       - 🟢 Windows
 
