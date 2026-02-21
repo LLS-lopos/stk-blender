@@ -27,6 +27,15 @@ jobs:
             io_scene_spm.zip
             io_artiste.zip
           tag_name: ${{ github.ref_name }}
-          name: SuperTuxKart Tools ${{ github.ref_name }}
+          name: SuperTuxKart Tools
+          body: |
+            ## Auto-Generate
+
+            the automatically generated packages are versions under development and exclusively dedicated to testing
+
+            - asset creation addon
+            - import/export addon
+            - node editor running test for artiste
+            - generated from the repository **${{ github.ref_name }}**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
