@@ -1283,6 +1283,7 @@ class STK_Track_Export_Operator(bpy.types.Operator):
 
     @classmethod
     def poll(self, context):  # poll checks whether the conditions are met to use the rest of the program
+
         if ('is_stk_track' in context.scene and context.scene['is_stk_track'] == 'true') or \
         ('is_stk_node' in context.scene and context.scene['is_stk_node'] == 'true'):
             return True
@@ -1290,8 +1291,8 @@ class STK_Track_Export_Operator(bpy.types.Operator):
             return False
 
     def invoke(self, context, event):
-        isATrack = context.scene['is_stk_track'] == 'true'
-        isANode = context.scene['is_stk_node'] == 'true'
+        isATrack = ('is_stk_track' in context.scene) and (context.scene['is_stk_track'] == 'true')
+        isANode = ('is_stk_node' in context.scene) and (context.scene['is_stk_node'] == 'true')
 
         # FIXME: in library nodes it's "name", in tracks it's "code"
         if isANode:
@@ -1328,8 +1329,8 @@ class STK_Track_Export_Operator(bpy.types.Operator):
             # Return to object mode before exporting
             bpy.ops.object.mode_set(mode='OBJECT')
 
-        isNotATrack = context.scene['is_stk_track'] != 'true'
-        isNotANode = context.scene['is_stk_node'] != 'true'
+        isNotATrack = ('is_stk_track' not in context.scene) or (context.scene['is_stk_track'] != 'true')
+        isNotANode = ('is_stk_node' not in context.scene) or (context.scene['is_stk_node'] != 'true')
 
         if self.filepath == "" or (isNotATrack and isNotANode):
             return {'FINISHED'}
