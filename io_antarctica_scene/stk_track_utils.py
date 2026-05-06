@@ -20,11 +20,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import bpy, math, re, random
+import bpy, math, re, random, traceback, sys
 from mathutils import *
 from . import stk_track, stk_utils
 
 # --------------------------------------------------------------------------
+def get_fcurves(anim_data):
+    if not anim_data:
+        return None
+    if bpy.app.version < (5, 0, 0):
+        if hasattr(anim_data, "action") and anim_data.action:
+            if hasattr(anim_data.action, "fcurves"):
+                return anim_data.action.fcurves
+    else:
+        if hasattr(anim_data, "action") and anim_data.action:
+            if hasattr(anim_data.action.layers[0].strips[0].channelbags[0], "fcurves"):
+                return anim_data.action.layers[0].strips[0].channelbags[0].fcurves
+    return None
 
 def get_proxy(obj):
     if bpy.app.version < (3, 0, 0):
@@ -162,7 +174,7 @@ class ParticleEmitterExporter:
 
                 flags = []
                 if len(stk_utils.getObjectProperty(obj, "particle_condition", "")) > 0:
-                    flags.append('conditions="' + stk_utils.getObjectProperty(obj, "particle_condition", "") + '"')
+                    flags.  append('conditions="' + stk_utils.getObjectProperty(obj, "particle_condition", "") + '"')
 
                 if stk_utils.getObjectProperty(obj, "clip_distance", 0) > 0 :
                     flags.append('clip_distance="%i"' % stk_utils.getObjectProperty(obj, "clip_distance", 0))
@@ -173,11 +185,13 @@ class ParticleEmitterExporter:
                 f.write('  <particle-emitter kind="%s" id=\"%s\" %s %s>\n' %\
                         (stk_utils.getObjectProperty(obj, "kind", 0), obj.name, originXYZ, ' '.join(flags)))
 
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(obj.animation_data.action.fcurves) > 0:
+                if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                     stk_track.writeIPO(self, f, obj.animation_data)
 
                 f.write('  </particle-emitter>\n')
             except:
+                traceback.print_exc()
+                #traceback.print_exc(file=sys.stdout)
                 self.log.report({'ERROR'}, "Invalid particle emitter <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
 
 # ------------------------------------------------------------------------------
@@ -239,13 +253,14 @@ class BlenderHairExporter:
                     # blender >= 3.2
                     elif bpy.app.version >= (3, 0, 0)and instance_obj.library is not None or instance_obj.override_library is not None:
                         if obj.library is not None:
-                            path_parts = re.split("/|\\\\", obj.library.filepath)
+                            #path_parts = re.split("/|\\\\", obj.library.filepath)
+                            path_parts = re.split("/|\\\\", instance_obj.library.filepath)
                         else:
-                            path_parts = re.split("/|\\\\", obj.override_library.reference.library.filepath)
-                        lib_name = path_parts[-2]
-                        f.write('  <library name="%s" id=\"%s\" %s/>\n' % (lib_name, instance_obj.name, loc_rot_scale_str))
+                            #path_parts = re.split("/|\\\\", obj.override_library.reference.library.filepath)
+                            path_parts = re.split("/|\\\\", instance_obj.override_library.reference.library.filepath)
+                        f.write('  <library name="%s" id=\"%s\" %s/>\n' % (path_parts[-2], instance_obj.name, loc_rot_scale_str))
                     else:
-                        name     = stk_utils.getObjectProperty(instance_obj, "name",   instance_obj.name )
+                        name = stk_utils.getObjectProperty(instance_obj, "name", instance_obj.name)
                         if len(name) == 0:
                             name = instance_obj.name
                         f.write('  <object type="animation" %s interaction="ghost" model="%s.spm" skeletal-animation="false"></object>\n' % (loc_rot_scale_str, name))
@@ -294,11 +309,13 @@ class SoundEmitterExporter:
                          stk_utils.getObjectProperty(obj, "sfx_volume", 0),
                          stk_utils.getObjectProperty(obj, "sfx_max_dist", 500.0), originXYZ, play_near_string, conditions_string))
 
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(obj.animation_data.action.fcurves) > 0:
+                if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                     stk_track.writeIPO(self, f, obj.animation_data)
 
                 f.write('  </object>\n')
             except:
+                traceback.print_exc()
+                #traceback.print_exc(file=sys.stdout)
                 self.log.report({'ERROR'}, "Invalid sound emitter <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
 
 
@@ -450,10 +467,12 @@ class LibraryNodeExporter:
                 originXYZ = stk_utils.getXYZHPRString(obj)
 
                 f.write('  <library name="%s" id=\"%s\" %s>\n' % (lib_name, obj.name, originXYZ))
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(obj.animation_data.action.fcurves) > 0:
+                if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                     stk_track.writeIPO(self, f, obj.animation_data)
                 f.write('  </library>\n')
             except:
+                traceback.print_exc()
+                #traceback.print_exc(file=sys.stdout)
                 self.log.report({'ERROR'}, "Invalid linked object <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
 
 
@@ -531,7 +550,7 @@ class BillboardExporter:
                         (obj.name, stk_utils.searchNodeTreeForImage(node_tree, 1),
                         obj.location[0], obj.location[2], obj.location[1]))
                 f.write('             width="%.3f" height="%.3f" %s>\n' %(max(x_max-x_min, z_max-z_min), y_max-y_min, fadeout_str) )
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(obj.animation_data.action.fcurves) > 0:
+                if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                     stk_track.writeIPO(self, f, obj.animation_data)
                 f.write('  </object>\n')
 
@@ -579,7 +598,7 @@ class LightsExporter:
             else:
                 f.write(' type=\"point\"')
             f.write('>\n')
-            if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(obj.animation_data.action.fcurves) > 0:
+            if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                 stk_track.writeIPO(self, f, obj.animation_data)
             f.write('  </light>\n')
 
