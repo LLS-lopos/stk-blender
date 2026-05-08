@@ -476,7 +476,7 @@ class STK_OT_Add_Object(bpy.types.Operator):
 
 # ======== PREFERENCES ========
 class StkPanelAddonPreferences(bpy.types.AddonPreferences):
-    if bpy.app.version < (5, 0, 0):
+    if bpy.app.version < (4, 2, 0):
         bl_idname = (os.path.basename(os.path.dirname(__file__)))
     else:
         bl_idname = __package__
@@ -518,7 +518,7 @@ class STK_FolderPicker_Operator(bpy.types.Operator):
         import bpy.path
         import os.path
 
-        if bpy.app.version < (5, 0, 0):
+        if bpy.app.version < (4, 2, 0):
             addon_prefs = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences
         else:
             addon_prefs = context.preferences.addons[__package__].preferences
@@ -546,7 +546,7 @@ class STK_PT_Quick_Export_Panel(bpy.types.Panel):
         row = layout.row()
 
         assets_path = ""
-        if bpy.app.version < (5, 0, 0):
+        if bpy.app.version < (4, 2, 0):
             assets_path = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
         else:
             assets_path = context.preferences.addons[__package__].preferences.stk_assets_path

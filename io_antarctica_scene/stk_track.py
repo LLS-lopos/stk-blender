@@ -725,7 +725,7 @@ class TrackExport:
 
             # In objects with skeletal animations the actual armature (which
             # is a parent) contains the IPO. So check for this:
-            if bpy.app.version < (5, 0, 0):
+            if bpy.app.version < (4, 2, 0):
                 if not ipo or not ipo.action or not ipo.action.fcurves or len(ipo.action.fcurves) == 0:
                     parent = obj.parent
                     if parent:
@@ -1064,7 +1064,7 @@ class TrackExport:
 
         stk_delete_old_files_on_export = False
         try:
-            if bpy.app.version < (5, 0, 0):
+            if bpy.app.version < (4, 2, 0):
                 stk_delete_old_files_on_export = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
             else:
                 stk_delete_old_files_on_export = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_delete_old_files_on_export
@@ -1268,7 +1268,7 @@ class STK_Track_Export_Operator(bpy.types.Operator):
 
         assets_path = ""
         try:
-            if bpy.app.version < (5, 0, 0):
+            if bpy.app.version < (4, 2, 0):
                 assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
             else:
                 assets_path = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_assets_path
@@ -1303,7 +1303,7 @@ class STK_Track_Export_Operator(bpy.types.Operator):
         if self.filepath == "" or (isNotATrack and isNotANode):
             return {'FINISHED'}
 
-        if bpy.app.version < (5, 0, 0):
+        if bpy.app.version < (4, 2, 0):
             exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
         else:
             exportImages = context.preferences.addons[stk_panel.__package__].preferences.stk_export_images
