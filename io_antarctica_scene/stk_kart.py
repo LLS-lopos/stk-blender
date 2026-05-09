@@ -654,8 +654,8 @@ def savescene_callback(self, context, sPath):
                 if curr.filepath is None or len(curr.filepath) == 0: continue
                 abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
                 shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
-                print(f"Copy Texture {abs_texture_path} to {sPath}")
-                self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
+                #print(f"Copy Texture {abs_texture_path} to {sPath}")
+                #self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
             except:
                 traceback.print_exc(file=sys.stdout)
                 self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
