@@ -24,22 +24,6 @@ import bpy, datetime, sys, os, struct, math, string, re, random, shutil, traceba
 from mathutils import *
 from . import stk_utils, stk_panel, stk_track_utils
 
-<<<<<<< HEAD
-# check animation in graph_editor
-def get_fcurves(anim_data):
-    if not anim_data:
-        return None
-    if bpy.app.version < (5, 0, 0):
-        if hasattr(anim_data, "action") and anim_data.action:
-            if hasattr(anim_data.action, "fcurves"):
-                return anim_data.action.fcurves
-    else:
-        if hasattr(anim_data, "action") and anim_data.action:
-            if hasattr(anim_data.action.layers[0].strips[0].channelbags[0], "fcurves"):
-                return anim_data.action.layers[0].strips[0].channelbags[0].fcurves
-    return None
-=======
->>>>>>> stk-origin
 
 def writeIPO(self, f, anim_data):
     #dInterp = {IpoCurve.InterpTypes.BEZIER:        "bezier",
@@ -741,7 +725,7 @@ class TrackExport:
 
             # In objects with skeletal animations the actual armature (which
             # is a parent) contains the IPO. So check for this:
-            if bpy.app.version < (5, 0, 0):
+            if bpy.app.version < (4, 2, 0):
                 if not ipo or not ipo.action or not ipo.action.fcurves or len(ipo.action.fcurves) == 0:
                     parent = obj.parent
                     if parent:
@@ -1081,7 +1065,7 @@ class TrackExport:
 
         stk_delete_old_files_on_export = False
         try:
-            if bpy.app.version < (5, 0, 0):
+            if bpy.app.version < (4, 2, 0):
                 stk_delete_old_files_on_export = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
             else:
                 stk_delete_old_files_on_export = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_delete_old_files_on_export
@@ -1109,9 +1093,14 @@ class TrackExport:
                     if curr.filepath is None or len(curr.filepath) == 0: continue
                     abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
                     shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
+<<<<<<< HEAD
 >>>>>>> stk-origin
                     print(f"Copy Texture {abs_texture_path} to {sPath}")
                     self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
+=======
+                    #print(f"Copy Texture {abs_texture_path} to {sPath}")
+                    #self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
+>>>>>>> stk-origin
                 except:
                     traceback.print_exc(file=sys.stdout)
                     self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
@@ -1299,7 +1288,7 @@ class STK_Track_Export_Operator(bpy.types.Operator):
 
         assets_path = ""
         try:
-            if bpy.app.version < (5, 0, 0):
+            if bpy.app.version < (4, 2, 0):
                 assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
             else:
                 assets_path = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_assets_path
@@ -1334,7 +1323,7 @@ class STK_Track_Export_Operator(bpy.types.Operator):
         if self.filepath == "" or (isNotATrack and isNotANode):
             return {'FINISHED'}
 
-        if bpy.app.version < (5, 0, 0):
+        if bpy.app.version < (4, 2, 0):
             exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
         else:
             exportImages = context.preferences.addons[stk_panel.__package__].preferences.stk_export_images

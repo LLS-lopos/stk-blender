@@ -625,7 +625,7 @@ def savescene_callback(self, context, sPath):
 
     stk_delete_old_files_on_export = False
     try:
-        if bpy.app.version < (5, 0, 0):
+        if bpy.app.version < (4, 2, 0):
             stk_delete_old_files_on_export = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
         else:
             stk_delete_old_files_on_export = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_delete_old_files_on_export
@@ -642,7 +642,7 @@ def savescene_callback(self, context, sPath):
     # Export the actual kart
     exportKart(self, sPath)
 
-    if bpy.app.version < (5, 0, 0):
+    if bpy.app.version < (4, 2, 0):
         exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
     else:
         exportImages = context.preferences.addons[stk_panel.__package__].preferences.stk_export_images
@@ -653,8 +653,8 @@ def savescene_callback(self, context, sPath):
                 if curr.filepath is None or len(curr.filepath) == 0: continue
                 abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
                 shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
-                print(f"Copy Texture {abs_texture_path} to {sPath}")
-                self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
+                #print(f"Copy Texture {abs_texture_path} to {sPath}")
+                #self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
             except:
                 traceback.print_exc(file=sys.stdout)
                 self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
