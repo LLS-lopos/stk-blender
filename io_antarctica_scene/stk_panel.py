@@ -440,9 +440,11 @@ class STK_OT_Add_Object(bpy.types.Operator):
     value: bpy.props.EnumProperty(attr="values", name="values", default='banana',
                                            items=[('banana', 'Banana', 'Banana'),
                                                   ('item', 'Item (Gift Box)', 'Item (Gift Box)'),
+                                                  ('item_air', 'Item (Gift Box Air)', 'Item (Gift Box)'),
                                                   ('light', 'Light', 'Light'),
-                                                  ('nitro_big', 'Nitro (Big)', 'Nitro (big)'),
-                                                  ('nitro_small', 'Nitro (Small)', 'Nitro (Small)'),
+                                                  ('nitro_big', 'Nitro (Big)', 'Nitro can | 3.0 / 2.5 nitro (1.x / Evo) | big radius'),
+                                                  ('nitro_small', 'Nitro (Small)', 'Nitro can | 1.0 nitro | small radius'),
+                                                  ('nitro_air', 'Nitro (Air)', 'Nitro can | 1.5 nitro | medium radius | convert to small can if exported in 1.x format'),
                                                   ('red_flag', 'Red flag', 'Red flag'),
                                                   ('blue_flag', 'Blue flag', 'Blue flag'),
                                                   ('particle_emitter', 'Particle Emitter', 'Particle Emitter'),
@@ -467,9 +469,9 @@ class STK_OT_Add_Object(bpy.types.Operator):
                     # FIXME: create associated subproperties if any
                     curr['type'] = self.value
 
-                    if self.value == 'item':
+                    if self.value in ['item', 'item_air']:
                         curr.empty_display_type = 'CUBE'
-                    elif self.value == 'nitro_big' or self.value == 'nitro_small' :
+                    elif self.value in ['nitro_big', 'nitro_small', 'nitro_air']:
                         curr.empty_display_type = 'CONE'
                     elif self.value == 'sfx_emitter':
                         curr.empty_display_type = 'SPHERE'

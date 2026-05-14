@@ -1084,23 +1084,10 @@ class TrackExport:
         if exportImages:
             for i,curr in enumerate(bpy.data.images):
                 try:
-<<<<<<< HEAD
-                    if curr.filepath is None or len(curr.filepath) == 0:  # if texture in blender file
-                        continue
-                    abs_texture_path = bpy.path.abspath(curr.filepath)  # check texture path
-                    shutil.copy(abs_texture_path, sPath)  # copy texture to assets_path / karts / folder_kart
-=======
                     if curr.filepath is None or len(curr.filepath) == 0: continue
                     abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
                     shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
-<<<<<<< HEAD
->>>>>>> stk-origin
                     print(f"Copy Texture {abs_texture_path} to {sPath}")
-                    self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
-=======
-                    #print(f"Copy Texture {abs_texture_path} to {sPath}")
-                    #self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
->>>>>>> stk-origin
                 except:
                     traceback.print_exc(file=sys.stdout)
                     self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
@@ -1252,23 +1239,12 @@ class STK_Track_Export_Operator(bpy.types.Operator):
     exportMaterials: bpy.props.BoolProperty(name="Export materials", default=True)
 
     @classmethod
-<<<<<<< HEAD
     def poll(self, context):  # poll checks whether the conditions are met to use the rest of the program
-=======
-    def poll(self, context):
->>>>>>> stk-origin
         if ('is_stk_track' in context.scene and context.scene['is_stk_track'] == 'true') or \
         ('is_stk_node' in context.scene and context.scene['is_stk_node'] == 'true'):
             return True
         else:
             return False
-<<<<<<< HEAD
-=======
-
-    def invoke(self, context, event):
-        isATrack = context.scene['is_stk_track'] == 'true'
-        isANode = context.scene['is_stk_node'] == 'true'
->>>>>>> stk-origin
 
     def invoke(self, context, event):
         isATrack = context.scene['is_stk_track'] == 'true'

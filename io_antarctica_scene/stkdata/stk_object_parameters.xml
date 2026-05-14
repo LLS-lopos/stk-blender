@@ -354,6 +354,12 @@
             <BoolProp id="dropitem" name="Drop to ground" default="true" doc="If checked, the item will be snapped to the ground"/>
             <BoolProp id="ctf_only" name="CTF only" default="false" doc="If checked, the item will be shown only in CTF mode"/>
         </EnumChoice>
+
+         <!-- Item (gift box air) -->
+        <EnumChoice id="item_air" label="Item (Gift Box Air)" doc="A gift box containing a random collectible (apply to an Empty)">
+            <BoolProp id="dropitem" name="Drop to ground" default="false" doc="If checked, the item will be snapped to the ground"/>
+            <BoolProp id="ctf_only" name="CTF only" default="false" doc="If checked, the item will be shown only in CTF mode"/>
+        </EnumChoice>
         
         <!-- Easter egg -->
         <EnumChoice id="easteregg" label="Easter Egg (Egg hunt mode)" doc="A hidden item (apply to an Empty)">
@@ -370,6 +376,11 @@
         
         <EnumChoice id="nitro_small" label="Nitro (small)" doc="A small nitro collectible (apply to an Empty)">
             <BoolProp id="dropitem" name="Drop to ground" default="true" doc="If checked, the item will be snapped to the ground"/>
+            <BoolProp id="ctf_only" name="CTF only" default="false" doc="If checked, the item will be shown only in CTF mode"/>
+        </EnumChoice>
+
+        <EnumChoice id="nitro_airl" label="Nitro (Air)" doc="A small nitro collectible (apply to an Empty)">
+            <BoolProp id="dropitem" name="Drop to ground" default="false" doc="If checked, the item will be snapped to the ground"/>
             <BoolProp id="ctf_only" name="CTF only" default="false" doc="If checked, the item will be shown only in CTF mode"/>
         </EnumChoice>
 
