@@ -39,7 +39,7 @@ def _get_group():
     # définition du group de propriété personalisé (entré/sortie)
     group = bpy.data.node_groups.new(_SOLID_GROUP, "ShaderNodeTree")
 
-    # On définit ses entrées (prises d'entrée)
+    """# On définit ses entrées (prises d'entrée)
     group.inputs.new("NodeSocketColor", "Color")
     group.inputs["Color"].default_value = (1.0, 1.0, 1.0, 1.0)
     # R = rugosité | V = metal | B = emission
@@ -62,19 +62,50 @@ def _get_group():
 
     # On crée les nœuds interne
     glossy_separator = nodes.new("ShaderNodeSeparateRGB")
-    couleur = entrer.outputs["Color"]
-    rugosity = glossy_separator.outputs["R"]
-    metal = float(glossy_separator.outputs["G"])
-    emission = glossy_separator.outputs["B"]
-
-    # si 0 ou 1 de metal
-    col_metal = (0.04 * (1-metal)+couleur*metal)
+    glossy_separator.location = (-600, 0)
 
     # On connecte les nœuds entre eux
     links = group.links
-    # links.new(entrer.outputs["Color"], sortie.inputs["PBR Solid"])
-    links.new(col_metal, sortie.inputs["PBR Solid"])
-    # On retourne le groupe tout prêt
+    links.new(entrer.outputs["Color"], sortie.inputs["PBR Solid"])
+    # On retourne le groupe tout prêt"""
+    group.inputs.new("NodeSocketColor", "Diffuse")
+    group.inputs.new("NodeSocketColor", "PBR Data")
+    group.inputs.new("NodeSocketVector", "Normal")
+    group.inputs.new("NodeSocketColor", "Vertex Color")
+    group.outputs.new("NodeSocketShader", "BSDF")
+
+    nodes = group.nodes
+    group_input = nodes.new("NodeGroupInput")
+    group_input.location = (-800, 0)
+    
+    group_output = nodes.new("NodeGroupOutput")
+    group_output.location = (600, 0)
+
+    separate = nodes.new("ShaderNodeSeparateRGB")
+    separate.location = (-400, 100)
+
+    multiply = nodes.new("ShaderNodeMixRGB")
+    multiply.blend_type = 'MULTIPLY'
+    multiply.inputs[0].default_value = 1.0
+    multiply.location = (-200, -100)
+
+    bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+    bsdf.location = (200, 0)
+    bsdf.inputs["Roughness"].default_value = 0.5
+
+    spec_input = bsdf.inputs.get("Specular IOR Level") or bsdf.inputs.get("Specular")
+
+    links = group.links
+    links.new(group_input.outputs["PBR Data"], separate.inputs[0])
+    links.new(separate.outputs[0], spec_input)
+    links.new(separate.outputs[1], bsdf.inputs["Metallic"])
+    links.new(separate.outputs[2], bsdf.inputs["Emission Strength"])
+    links.new(group_input.outputs["Diffuse"], multiply.inputs[1])
+    links.new(group_input.outputs["Vertex Color"], multiply.inputs[2])
+    links.new(multiply.outputs[0], bsdf.inputs["Base Color"])
+    links.new(multiply.outputs[0], bsdf.inputs["Emission"])
+    links.new(group_input.outputs["Normal"], bsdf.inputs["Normal"])
+    links.new(bsdf.outputs[0], group_output.inputs["BSDF"])
     return group
 
 
@@ -94,7 +125,7 @@ class ShaderStkSolid(ShaderNodeCustomGroup, ShaderStkBase):
 
     def draw_buttons(self, context, layout):
         pass
-
+    
     def gpu_extras(self, context):
         return {
             'vertex': '''
