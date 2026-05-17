@@ -43,11 +43,7 @@ def saveNitroEmitter(self, f, lNitroEmitter, path):
         f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
                     % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
         f.write('  </nitro-emitter>\n')
-    #else:
-     #   f.write('  <nitro-emitter>\n')
-	  #  f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
-	   #         % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
-	    #f.write('  </nitro-emitter>\n')
+        
 
 # ------------------------------------------------------------------------------
 # Save headlights if exist
@@ -668,7 +664,7 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
 
     bl_idname = ("screen.stk_kart_export")
     bl_label = ("Export STK Kart")
-    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+    filepath: bpy.props.StringProperty(subtype="DIR_PATH")
 
     @classmethod
     def poll(self, context):

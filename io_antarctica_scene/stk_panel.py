@@ -267,11 +267,19 @@ class STK_PT_Object_Panel(bpy.types.Panel, PanelBase):
 
         obj = context.object
 
-        if get_proxy(obj):
-            layout.label(text="Library nodes cannot be configured here")
-            return
-
-        if obj is not None:
+        # Only show the visible if property for library nodes
+        if obj.library is not None or obj.override_library is not None:
+            layout.label(text="Only if conditions can be configured for library nodes.")
+            if "if" in obj:
+                row = layout.row()
+                row.label(text="Visible if...")
+                row.prop(obj, '["if"]', text="")
+            else:
+                # If not set, create it or show a button to create it
+                row = layout.row()
+                row.label(text="Visible if...")
+                row.operator('screen.stk_missing_props_' + str(CONTEXT_OBJECT))
+        elif obj is not None:
             if is_track or is_node:
                 properties = OrderedDict([])
                 for curr in STK_PER_OBJECT_TRACK_PROPERTIES[1]:
@@ -471,7 +479,7 @@ class STK_OT_Add_Object(bpy.types.Operator):
 
                     if self.value in ['item', 'item_air']:
                         curr.empty_display_type = 'CUBE'
-                    elif self.value in ['nitro_big', 'nitro_small', 'nitro_air']:
+                    elif self.value == 'nitro_big' or self.value == 'nitro_small' or self.value == 'nitro_air' :
                         curr.empty_display_type = 'CONE'
                     elif self.value == 'sfx_emitter':
                         curr.empty_display_type = 'SPHERE'
@@ -529,7 +537,6 @@ class STK_FolderPicker_Operator(bpy.types.Operator):
     def execute(self, context):
         import bpy.path
         import os.path
-
         if bpy.app.version < (4, 2, 0):
             addon_prefs = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences
         else:
@@ -557,7 +564,6 @@ class STK_PT_Quick_Export_Panel(bpy.types.Panel):
         # ==== Types group ====
         row = layout.row()
 
-        assets_path = ""
         if bpy.app.version < (4, 2, 0):
             assets_path = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
         else:

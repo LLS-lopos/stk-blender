@@ -44,16 +44,16 @@ class STK_cli(node):
         
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
-            instruction = ""
+            s_output = ""
             if self.s_input != "":
                 # Add a space if the input doesn't end with one
                 if not self.s_input.endswith(" "):
-                    instruction += self.s_input + " "
+                    s_output += self.s_input + " "
                 else:
-                    instruction += self.s_input
-            instruction += f"{self.cli}"
-            self.outputs[0].default_value = instruction
-            return instruction
+                    s_output += self.s_input
+            s_output += f"{self.cli}"
+            self.outputs[0].default_value = s_output
+            return s_output
         
         return self.s_input
 
