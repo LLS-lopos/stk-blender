@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 bl_info = {
-    "name": "SPM (Space paritioned mesh) format",
+    "name": "SPM (Space partitioned mesh) format",
     "author": "Benau, Richard Qian, LLS",
     "description": "Import-Export from or to the SPM format (the SuperTuxKart mesh format)",
     "version": (2, 0),
@@ -86,7 +86,7 @@ class SPM_Export_Operator(bpy.types.Operator, ExportHelper):
         options={'HIDDEN'},
     )
 
-    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+    filepath: bpy.props.StringProperty(subtype="DIR_PATH")
     selection_type: bpy.props.EnumProperty(
         name="Object selection type",
         description="Which objects will be exported",

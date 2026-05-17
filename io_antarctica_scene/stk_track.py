@@ -28,22 +28,19 @@ import shutil
 import sys
 import traceback
 
-from . import stk_utils, stk_track_utils
-
-
-# check animation in graph_editor
 def get_fcurves(anim_data):
     if not anim_data:
         return None
-    if bpy.app.version < (5, 0, 0):
+    if bpy.app.version < (4, 2, 0):
         if hasattr(anim_data, "action") and anim_data.action:
             if hasattr(anim_data.action, "fcurves"):
                 return anim_data.action.fcurves
     else:
         if hasattr(anim_data, "action") and anim_data.action:
-            if hasattr(anim_data.action.layers[0].strips[0].channelbags[0], "fcurves"):
-                return anim_data.action.layers[0].strips[0].channelbags[0].fcurves
-    return None
+            if (hasattr(anim_data.action, "layers") and anim_data.action.layers and
+                hasattr(anim_data.action.layers[0], "strips") and anim_data.action.layers[0].strips and
+                hasattr(anim_data.action.layers[0].strips[0], "channelbags") and
+                anim_data.action.layers[0].strips[0].channelbags):
 
 
 def writeIPO(self, f, anim_data):
@@ -54,8 +51,8 @@ def writeIPO(self, f, anim_data):
     #           IpoCurve.ExtendTypes.EXTRAP:        "extrap",
     #           IpoCurve.ExtendTypes.CYCLIC_EXTRAP: "cyclic_extrap",
     #           IpoCurve.ExtendTypes.CYCLIC:        "cyclic"         }
-
-    ipo = get_fcurves(anim_data)
+    
+    ipo = stk_track_utils.get_fcurves(anim_data)
     if ipo is None:
         return
 
@@ -419,7 +416,7 @@ class TrackExport:
                 flags.append('frame-start="%s"' % ' '.join(str(x) for x in frame_start))
                 flags.append('frame-end="%s"' % ' '.join(str(x) for x in frame_end))
             is_cyclic = False
-            parents = get_fcurves(parent.animation_data)
+            parents = stk_track_utils.get_fcurves(parent.animation_data)
             if parents:
                 for curve in parents:
                     for modifier in curve.modifiers:
@@ -757,7 +754,7 @@ class TrackExport:
 
             # In objects with skeletal animations the actual armature (which
             # is a parent) contains the IPO. So check for this:
-            if bpy.app.version < (5, 0, 0):
+            if bpy.app.version < (4, 2, 0):
                 if not ipo or not ipo.action or not ipo.action.fcurves or len(ipo.action.fcurves) == 0:
                     parent = obj.parent
                     if parent:
@@ -1099,8 +1096,10 @@ class TrackExport:
 
         stk_delete_old_files_on_export = False
         try:
-            stk_delete_old_files_on_export = bpy.context.preferences.addons[
-                os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
+            if bpy.app.version < (4, 2, 0):
+                stk_delete_old_files_on_export = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
+            else:
+                stk_delete_old_files_on_export = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_delete_old_files_on_export
         except:
             pass
 
@@ -1111,31 +1110,38 @@ class TrackExport:
                 print("Deleting ", f)
                 os.remove(f)
 
-        # check that "copy texture file ..." is checked in the scene property settings
-        exportImages = bpy.context.preferences.addons[
-            os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
+        blendfile_dir = os.path.dirname(bpy.data.filepath)
+
+        ## Library Nodes also use this export path, so we only validate track version for tracks, soccer fields, and arenas (all are "tracks" for the exporter")
+        is_track = stk_utils.getSceneProperty(bpy.data.scenes[0], 'is_stk_track', 'false') == "true"
+        track_version = -1
+        if (is_track):
+            # Version 7 is the SPM track format used for 1.x
+            # Version 8 is the SPM track format used for Evolution.
+            # Specifications for version 8 are not final.
+            track_version = bpy.context.scene['track_version']
+            if ((track_version != 7) and (track_version != 8) and (is_track)):
+                self.log.report({'ERROR'}, "The track.xml version is not specified or incorrect")
+                return
+
         if exportImages:
             for i, curr in enumerate(bpy.data.images):
                 try:
-                    if curr.filepath is None or len(curr.filepath) == 0:  # if texture in blender file
-                        continue
-                    abs_texture_path = bpy.path.abspath(curr.filepath)  # check texture path
-                    shutil.copy(abs_texture_path, sPath)  # copy texture to assets_path / karts / folder_kart
+                    if curr.filepath is None or len(curr.filepath) == 0: continue
+                    abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
+                    shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
                     print(f"Copy Texture {abs_texture_path} to {sPath}")
-                    self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
                 except:
                     traceback.print_exc(file=sys.stdout)
                     self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
 
         drivelineExporter = stk_track_utils.DrivelineExporter(self.log)
         navmeshExporter = stk_track_utils.NavmeshExporter(self.log)
-        exporters = [drivelineExporter, stk_track_utils.ParticleEmitterExporter(self.log),
-                     stk_track_utils.BlenderHairExporter(self.log), stk_track_utils.SoundEmitterExporter(self.log),
-                     stk_track_utils.ActionTriggerExporter(self.log), stk_track_utils.ItemsExporter(),
-                     stk_track_utils.BillboardExporter(self.log), stk_track_utils.LightsExporter(self.log),
-                     stk_track_utils.LightShaftExporter(),
-                     stk_track_utils.StartPositionFlagExporter(self.log), stk_track_utils.LibraryNodeExporter(self.log),
-                     navmeshExporter]
+        exporters = [drivelineExporter, stk_track_utils.ParticleEmitterExporter(self.log), stk_track_utils.BlenderHairExporter(self.log),
+                     stk_track_utils.SoundEmitterExporter(self.log), stk_track_utils.ActionTriggerExporter(self.log),
+                     stk_track_utils.ItemsExporter(track_version), stk_track_utils.BillboardExporter(self.log),
+                     stk_track_utils.LightsExporter(self.log), stk_track_utils.LightShaftExporter(),
+                     stk_track_utils.StartPositionFlagExporter(self.log), stk_track_utils.LibraryNodeExporter(self.log), navmeshExporter]
 
         # Collect the different kind of meshes this exporter handles
         # ----------------------------------------------------------
@@ -1276,7 +1282,7 @@ class STK_Track_Export_Operator(bpy.types.Operator):
 
     bl_idname = ("screen.stk_track_export")
     bl_label = ("Export STK Track")
-    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+    filepath: bpy.props.StringProperty(subtype="DIR_PATH")
     exportScene: bpy.props.BoolProperty(name="Export scene", default=True)
     exportDrivelines: bpy.props.BoolProperty(name="Export drivelines", default=True)
     exportMaterials: bpy.props.BoolProperty(name="Export materials", default=True)
@@ -1306,8 +1312,16 @@ class STK_Track_Export_Operator(bpy.types.Operator):
                 return {'FINISHED'}
             code = context.scene['code']
 
-        assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
-        if assets_path is None:
+        assets_path = ""
+        try:
+            if bpy.app.version < (4, 2, 0):
+                assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
+            else:
+                assets_path = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_assets_path
+        except:
+            pass
+
+        if assets_path is None or len(assets_path) < 0:
             self.report({'ERROR'}, "Please select the export path in the add-on preferences or quick exporter panel")
             return {'FINISHED'}
 
@@ -1335,8 +1349,9 @@ class STK_Track_Export_Operator(bpy.types.Operator):
         if self.filepath == "" or (isNotATrack and isNotANode):
             return {'FINISHED'}
 
-        exportImages = context.preferences.addons[
-            os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
-        savescene_callback(self, self.filepath, exportImages, self.exportDrivelines, self.exportScene,
-                           self.exportMaterials)
+        if bpy.app.version < (4, 2, 0):
+            exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
+        else:
+            exportImages = context.preferences.addons[stk_panel.__package__].preferences.stk_export_images
+        savescene_callback(self, self.filepath, exportImages, self.exportDrivelines, self.exportScene, self.exportMaterials)
         return {'FINISHED'}

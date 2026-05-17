@@ -20,15 +20,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import bpy
-import math
-import random
-import re
+import bpy, math, re, random, traceback, sys
 from mathutils import *
 
 from . import stk_track, stk_utils
 
 
+# --------------------------------------------------------------------------
+def get_fcurves(anim_data):
+    if not anim_data:
+        return None
+    if bpy.app.version < (4, 2, 0):
+        if hasattr(anim_data, "action") and anim_data.action:
+            if hasattr(anim_data.action, "fcurves"):
+                return anim_data.action.fcurves
+    else:
+        if hasattr(anim_data, "action") and anim_data.action:
+            if hasattr(anim_data.action.layers[0].strips[0].channelbags[0], "fcurves"):
+                return anim_data.action.layers[0].strips[0].channelbags[0].fcurves
+    return None
+
+def get_proxy(obj):
+    if bpy.app.version < (3, 0, 0):
+        if obj.proxy is not None and obj.proxy.library is not None:
+            return obj
+    elif bpy.app.version >= (3, 0, 0):
+        if obj.library is not None or obj.override_library is not None:
+            return obj
+    else:
+        return False
+    
 # --------------------------------------------------------------------------
 
 def writeBezierCurve(f, curve, speed, extend="cyclic"):
@@ -55,8 +76,9 @@ def writeBezierCurve(f, curve, speed, extend="cyclic"):
 # ------------------------------------------------------------------------------
 class ItemsExporter:
 
-    def __init__(self):
+    def __init__(self, track_version=7):
         self.m_objects = []
+        self.track_version = track_version
 
     def processObject(self, object, stktype):
 
@@ -67,12 +89,11 @@ class ItemsExporter:
             # add the property for all items.
             stktype = stk_utils.getObjectProperty(object, "type", object.name).upper()
             # Check for old and new style names
-            if stktype[:8] in ["GHERRING", "RHERRING", "YHERRING", "SHERRING"] \
-                    or stktype[: 6] == "BANANA" or stktype[:4] == "ITEM" \
-                    or stktype[:11] == "NITRO-SMALL" or stktype[:9] == "NITRO-BIG" \
-                    or stktype[:11] == "NITRO_SMALL" or stktype[:9] == "NITRO_BIG" \
-                    or stktype[:11] == "SMALL-NITRO" or stktype[:9] == "BIG-NITRO" \
-                    or stktype[: 6] == "ZIPPER":
+            if stktype[: 6]== "BANANA"     or stktype[:4]=="ITEM"           \
+                or stktype[:11]=="NITRO-SMALL" or stktype[:9]=="NITRO-BIG" or stktype[: 9]=="NITRO-AIR" \
+                or stktype[:11]=="NITRO_SMALL" or stktype[:9]=="NITRO_BIG" or stktype[: 9]=="NITRO_AIR" \
+                or stktype[:11]=="SMALL-NITRO" or stktype[:9]=="BIG-NITRO" or stktype[: 9]=="AIR-NITRO" \
+                or stktype[: 6]=="ZIPPER":
                 self.m_objects.append(object)
                 return True
         return False
@@ -99,18 +120,21 @@ class ItemsExporter:
                 if g:
                     item_type = g.group(1)
                     specs = g.group(2).lower()
-                    if specs.find("z") >= 0: z = None
-                    if specs.find("p") >= 0: p = None
-                    if specs.find("r") >= 0: r = None
-                if item_type == "GHERRING": item_type = "banana"
-                if item_type == "RHERRING": item_type = "item"
-                if item_type == "YHERRING": item_type = "big-nitro"
-                if item_type == "SHERRING": item_type = "small-nitro"
+                    if specs.find("z")>=0: z=None
+                    if specs.find("p")>=0: p=None
+                    if specs.find("r")>=0: r=None
             else:
-                if item_type == "nitro-big": item_type = "big-nitro"
-                if item_type == "nitro_big": item_type = "big-nitro"
-                if item_type == "nitro-small": item_type = "small-nitro"
-                if item_type == "nitro_small": item_type = "small-nitro"
+                if item_type=="nitro-big": item_type="big-nitro"
+                if item_type=="nitro_big": item_type="big-nitro"
+                if item_type=="nitro-small": item_type="small-nitro"
+                if item_type=="nitro_small": item_type="small-nitro"
+                if item_type=="nitro-air": item_type = "air-nitro"
+                if item_type=="nitro_air": item_type = "air-nitro"
+
+            # Only export nitro-air if the track is exported with the Evolution-format
+            # For older versions, we swap it with a small nitro
+            if (self.track_version < 8 and item_type=="air-nitro"):
+                item_type = "small-nitro"
 
             # Get the position of the item - first check if the item should
             # be dropped on the track, or stay at the position indicated.
@@ -157,7 +181,7 @@ class ParticleEmitterExporter:
 
                 flags = []
                 if len(stk_utils.getObjectProperty(obj, "particle_condition", "")) > 0:
-                    flags.append('conditions="' + stk_utils.getObjectProperty(obj, "particle_condition", "") + '"')
+                    flags.  append('conditions="' + stk_utils.getObjectProperty(obj, "particle_condition", "") + '"')
 
                 if stk_utils.getObjectProperty(obj, "clip_distance", 0) > 0:
                     flags.append('clip_distance="%i"' % stk_utils.getObjectProperty(obj, "clip_distance", 0))
@@ -168,14 +192,14 @@ class ParticleEmitterExporter:
                 f.write('  <particle-emitter kind="%s" id=\"%s\" %s %s>\n' % \
                         (stk_utils.getObjectProperty(obj, "kind", 0), obj.name, originXYZ, ' '.join(flags)))
 
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(
-                        obj.animation_data.action.fcurves) > 0:
+                if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                     stk_track.writeIPO(self, f, obj.animation_data)
 
                 f.write('  </particle-emitter>\n')
             except:
-                self.log.report({'ERROR'}, "Invalid particle emitter <" + stk_utils.getObjectProperty(obj, "name",
-                                                                                                      obj.name) + "> ")
+                traceback.print_exc()
+                #traceback.print_exc(file=sys.stdout)
+                self.log.report({'ERROR'}, "Invalid particle emitter <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
 
 
 # ------------------------------------------------------------------------------
@@ -227,13 +251,16 @@ class BlenderHairExporter:
                     if (particleSystem.settings.normal_factor >= 0.5):
                         hpr.rotate_axis("Z", -1.57079633)
 
-                    # print (particle.size)
-                    si = particle.size  # / instance_obj.dimensions[2]
-                    loc_rot_scale_str = "xyz=\"%.2f %.2f %.2f\" hpr=\"%.1f %.1f %.1f\" scale=\"%.2f %.2f %.2f\"" % \
-                                        (loc[0], loc[2], loc[1], -hpr[0] * rad2deg, -hpr[2] * rad2deg,
-                                         -hpr[1] * rad2deg, si, si, si)
-
-                    if instance_obj.library is not None or instance_obj.override_library is not None:
+                    #print (particle.size)
+                    si = particle.size #/ instance_obj.dimensions[2]
+                    loc_rot_scale_str = "xyz=\"%.2f %.2f %.2f\" hpr=\"%.1f %.1f %.1f\" scale=\"%.2f %.2f %.2f\"" %\
+                       (loc[0], loc[2], loc[1], -hpr[0]*rad2deg, -hpr[2]*rad2deg,
+                        -hpr[1]*rad2deg, si, si, si)
+                    # blender < 3.2
+                    if bpy.app.version < (3, 0, 0) and instance_obj.proxy is not None and instance_obj.proxy.library is not None:
+                        path_parts = re.split("/|\\\\", instance_obj.proxy.library.filepath)
+                    # blender >= 3.2
+                    elif bpy.app.version >= (3, 0, 0)and instance_obj.library is not None or instance_obj.override_library is not None:
                         if obj.library is not None:
                             #path_parts = re.split("/|\\\\", obj.library.filepath)
                             path_parts = re.split("/|\\\\", instance_obj.library.filepath)
@@ -294,14 +321,21 @@ class SoundEmitterExporter:
                      stk_utils.getObjectProperty(obj, "sfx_max_dist", 500.0), originXYZ, play_near_string,
                      conditions_string))
 
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(
-                        obj.animation_data.action.fcurves) > 0:
+                f.write('  <object type="sfx-emitter" id=\"%s\" sound="%s" rolloff="%.3f" volume="%s" max_dist="%.1f" %s%s%s>\n' %\
+                        (obj.name,
+                         stk_utils.getObjectProperty(obj, "sfx_filename", "some_sound.ogg"),
+                         stk_utils.getObjectProperty(obj, "sfx_rolloff", 0.05),
+                         stk_utils.getObjectProperty(obj, "sfx_volume", 0),
+                         stk_utils.getObjectProperty(obj, "sfx_max_dist", 500.0), originXYZ, play_near_string, conditions_string))
+
+                if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                     stk_track.writeIPO(self, f, obj.animation_data)
 
                 f.write('  </object>\n')
             except:
-                self.log.report({'ERROR'},
-                                "Invalid sound emitter <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
+                traceback.print_exc()
+                #traceback.print_exc(file=sys.stdout)
+                self.log.report({'ERROR'}, "Invalid sound emitter <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
 
 
 # ------------------------------------------------------------------------------
@@ -435,8 +469,7 @@ class LibraryNodeExporter:
         self.log = log
 
     def processObject(self, object, stktype):
-
-        if object.library is not None or object.override_library is not None:
+        if get_proxy(object):
             self.m_objects.append(object)
             return True
         else:
@@ -446,23 +479,30 @@ class LibraryNodeExporter:
         import re
         for obj in self.m_objects:
             try:
-                if obj.library is not None:
-                    path_parts = re.split("/|\\\\", obj.library.filepath)
-                else:
-                    path_parts = re.split("/|\\\\", obj.override_library.reference.library.filepath)
+                if bpy.app.version < (3, 0, 0):
+                    path_parts = re.split("/|\\\\", obj.proxy.library.filepath)
+                if bpy.app.version >= (3, 0, 0):
+                    if obj.library is not None:
+                        path_parts = re.split("/|\\\\", obj.library.filepath)
+                    else:
+                        path_parts = re.split("/|\\\\", obj.override_library.reference.library.filepath)
                 lib_name = path_parts[-2]
 
                 # origin
                 originXYZ = stk_utils.getXYZHPRString(obj)
 
-                f.write('  <library name="%s" id=\"%s\" %s>\n' % (lib_name, obj.name, originXYZ))
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(
-                        obj.animation_data.action.fcurves) > 0:
+                f.write('  <library name="%s" id=\"%s\" %s' % (lib_name, obj.name, originXYZ))
+                if_condition = stk_utils.getObjectProperty(obj, "if", "")
+                if len(if_condition) > 0:
+                    f.write(' if=\"%s\"' % if_condition)
+                f.write('>\n') # Close the library XML start tag
+                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(obj.animation_data.action.fcurves) > 0:
                     stk_track.writeIPO(self, f, obj.animation_data)
                 f.write('  </library>\n')
             except:
-                self.log.report({'ERROR'},
-                                "Invalid linked object <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
+                traceback.print_exc()
+                #traceback.print_exc(file=sys.stdout)
+                self.log.report({'ERROR'}, "Invalid linked object <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
 
 
 # ------------------------------------------------------------------------------
@@ -536,11 +576,9 @@ class BillboardExporter:
                 node_tree = obj.material_slots[data.polygons[0].material_index].material.node_tree
                 f.write('  <object type="billboard" id=\"%s\" texture="%s" xyz="%.2f %.2f %.2f" \n' %
                         (obj.name, stk_utils.searchNodeTreeForImage(node_tree, 1),
-                         obj.location[0], obj.location[2], obj.location[1]))
-                f.write('             width="%.3f" height="%.3f" %s>\n' % (
-                max(x_max - x_min, z_max - z_min), y_max - y_min, fadeout_str))
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(
-                        obj.animation_data.action.fcurves) > 0:
+                        obj.location[0], obj.location[2], obj.location[1]))
+                f.write('             width="%.3f" height="%.3f" %s>\n' %(max(x_max-x_min, z_max-z_min), y_max-y_min, fadeout_str) )
+                if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                     stk_track.writeIPO(self, f, obj.animation_data)
                 f.write('  </object>\n')
 
@@ -590,8 +628,7 @@ class LightsExporter:
             else:
                 f.write(' type=\"point\"')
             f.write('>\n')
-            if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(
-                    obj.animation_data.action.fcurves) > 0:
+            if obj.animation_data and get_fcurves(obj.animation_data) and len(get_fcurves(obj.animation_data)) > 0:
                 stk_track.writeIPO(self, f, obj.animation_data)
             f.write('  </light>\n')
 
@@ -806,17 +843,11 @@ class DrivelineExporter:
             for cam in self.lTVCameras:
                 xyz = stk_utils.getXYZString(cam)
                 # Optional per-object overrides
-                md = stk_utils.getObjectProperty(cam, 'tv_min_delta', '')
-                cd = stk_utils.getObjectProperty(cam, 'tv_cooldown', '')
+                md = stk_utils.getObjectProperty(cam, 'start', '')
                 extra = []
                 try:
                     if str(md) != '' and float(md) >= 0.0:
-                        extra.append('min-delta="%.3f"' % float(md))
-                except:
-                    pass
-                try:
-                    if str(cd) != '' and float(cd) >= 0.0:
-                        extra.append('cooldown="%.3f"' % float(cd))
+                        extra.append('start="%.3f"' % float(md))
                 except:
                     pass
                 if extra:

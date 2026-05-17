@@ -3,6 +3,9 @@
 /.idea
 /.venv
 /tmp
+/.venv
+/.idea
+
 
 **/*.pyc
 

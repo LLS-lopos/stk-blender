@@ -50,18 +50,7 @@ def saveNitroEmitter(self, f, lNitroEmitter, path):
         f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
                     % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
         f.write('  </nitro-emitter>\n')
-    #if len(lNitroEmitter) > 0:	
-	    #f.write('  <nitro-emitter>\n')
-	    #f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
-	    #        % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
-	    #f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
-	    #        % (lNitroEmitter[1].location.x, lNitroEmitter[1].location.z, lNitroEmitter[1].location.y))
-	    #f.write('  </nitro-emitter>\n')
-    #else:
-     #   f.write('  <nitro-emitter>\n')
-	  #  f.write('    <nitro-emitter-a position = "%f %f %f" />\n' \
-	   #         % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
-	    #f.write('  </nitro-emitter>\n')
+        
 
 
 # ------------------------------------------------------------------------------
@@ -661,8 +650,10 @@ def savescene_callback(self, context, sPath):
 
     stk_delete_old_files_on_export = False
     try:
-        stk_delete_old_files_on_export = bpy.context.preferences.addons[
-            os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
+        if bpy.app.version < (4, 2, 0):
+            stk_delete_old_files_on_export = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
+        else:
+            stk_delete_old_files_on_export = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_delete_old_files_on_export
     except:
         pass
 
@@ -675,19 +666,23 @@ def savescene_callback(self, context, sPath):
 
     # Export the actual kart
     exportKart(self, sPath)
-    # check that "copy texture file ..." is checked in the scene property settings
-    exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
+
+    if bpy.app.version < (4, 2, 0):
+        exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
+    else:
+        exportImages = context.preferences.addons[stk_panel.__package__].preferences.stk_export_images
+
     if exportImages:
-        for i, curr in enumerate(bpy.data.images):
+        for i,curr in enumerate(bpy.data.images):
             try:
-                if curr.filepath is None or len(curr.filepath) == 0:  continue  # if texture in blender file
-                abs_texture_path = bpy.path.abspath(curr.filepath)  # check texture path
-                shutil.copy(abs_texture_path, self.filepath)  # copy texture to assets_path / karts / folder_kart
-                print(f"Copy Texture {abs_texture_path} to {self.filepath}")
-                self.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + self.filepath)
+                if curr.filepath is None or len(curr.filepath) == 0: continue
+                abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
+                shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
+                #print(f"Copy Texture {abs_texture_path} to {sPath}")
+                #self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
             except:
                 traceback.print_exc(file=sys.stdout)
-                self.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
+                self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
 
     now = datetime.datetime.now()
     self.report({'INFO'}, "Kart export completed on " + now.strftime("%Y-%m-%d %H:%M"))
@@ -699,11 +694,10 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
 
     bl_idname = ("screen.stk_kart_export")
     bl_label = ("Export STK Kart")
-    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+    filepath: bpy.props.StringProperty(subtype="DIR_PATH")
 
     @classmethod
-    def poll(self, context):  # poll checks whether the conditions are met to use the rest of the program
-        # check that "is a Supertuxkart kart" is checked in the scene property settings
+    def poll(self, context):
         if 'is_stk_kart' in context.scene and context.scene['is_stk_kart'] == 'true':
             return True
         else:
