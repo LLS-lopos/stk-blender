@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import bpy, datetime, sys, os, struct, math, string, re, random, shutil, traceback
+import bpy, datetime, sys, os, struct, math, string, re, random, shutil, traceback, pathlib
 from mathutils import *
 from . import stk_utils, stk_panel, stk_track_utils
 
@@ -1077,13 +1077,15 @@ class TrackExport:
         sPath = os.path.dirname(sFilePath)
 
         stk_delete_old_files_on_export = False
-        try:
-            if bpy.app.version < (4, 2, 0):
-                stk_delete_old_files_on_export = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
-            else:
-                stk_delete_old_files_on_export = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_delete_old_files_on_export
-        except:
-            pass
+        # check properties preference
+        if bpy.app.version < (4, 2, 0):
+            stk_delete_old_files_on_export = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
+            check_analyse_texture = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_check_tex_analyse
+            texture_folder = pathlib.Path(bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_tex_analyse)
+        else:
+            stk_delete_old_files_on_export = bpy.context.preferences.addons[__package__].preferences.stk_delete_old_files_on_export
+            check_analyse_texture = bpy.context.preferences.addons[__package__].preferences.stk_check_tex_analyse
+            texture_folder = pathlib.Path(bpy.context.preferences.addons[__package__].preferences.stk_tex_analyse)
 
         if stk_delete_old_files_on_export:
             os.chdir(sPath)
@@ -1106,13 +1108,24 @@ class TrackExport:
                 self.log.report({'ERROR'}, "The track.xml version is not specified or incorrect")
                 return
 
+        # check all texture in STK Projet
+        image_stk = []
+        l_tex = []
+        if check_analyse_texture:
+            l_tex += list(texture_folder.glob('**/*.png'))  # check texture PNG
+            l_tex += list(texture_folder.glob('**/*.jpeg'))  # check texture JPG
+            l_tex += list(texture_folder.glob('**/*.jpg'))  # check texture JPEG
+            for textures in l_tex:
+                image_stk.append(pathlib.Path(textures).name)
         if exportImages:
             for i,curr in enumerate(bpy.data.images):
                 try:
-                    if curr.filepath is None or len(curr.filepath) == 0: continue
-                    abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
-                    shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
-                    print(f"Copy Texture {abs_texture_path} to {sPath}")
+                    if curr.filepath is None or len(curr.filepath) == 0:
+                        continue
+                    abs_texture_path = bpy.path.abspath(curr.filepath)  # check texture path
+                    if not pathlib.Path(abs_texture_path).name in image_stk:  # check if texture not in STK Projet
+                        shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
+                        print(f"Copy Texture {abs_texture_path} to {sPath}")
                 except:
                     traceback.print_exc(file=sys.stdout)
                     self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
@@ -1290,13 +1303,10 @@ class STK_Track_Export_Operator(bpy.types.Operator):
             code = context.scene['code']
 
         assets_path = ""
-        try:
-            if bpy.app.version < (4, 2, 0):
-                assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
-            else:
-                assets_path = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_assets_path
-        except:
-            pass
+        if bpy.app.version < (4, 2, 0):
+            assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
+        else:
+            assets_path = bpy.context.preferences.addons[__package__].preferences.stk_assets_path
 
         if assets_path is None or len(assets_path) < 0:
             self.report({'ERROR'}, "Please select the export path in the add-on preferences or quick exporter panel")
@@ -1329,6 +1339,6 @@ class STK_Track_Export_Operator(bpy.types.Operator):
         if bpy.app.version < (4, 2, 0):
             exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
         else:
-            exportImages = context.preferences.addons[stk_panel.__package__].preferences.stk_export_images
+            exportImages = context.preferences.addons[__package__].preferences.stk_export_images
         savescene_callback(self, self.filepath, exportImages, self.exportDrivelines, self.exportScene, self.exportMaterials)
         return {'FINISHED'}

@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import bpy, datetime, sys, os, shutil, traceback, math
+import bpy, datetime, sys, os, shutil, traceback, math, pathlib
 from bpy_extras.io_utils import ExportHelper
 from mathutils import *
 from . import stk_utils, stk_panel
@@ -620,13 +620,17 @@ def savescene_callback(self, context, sPath):
         return
 
     stk_delete_old_files_on_export = False
-    try:
-        if bpy.app.version < (4, 2, 0):
-            stk_delete_old_files_on_export = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
-        else:
-            stk_delete_old_files_on_export = bpy.context.preferences.addons[stk_panel.__package__].preferences.stk_delete_old_files_on_export
-    except:
-        pass
+    # check properties preference
+    if bpy.app.version < (4, 2, 0):
+        stk_delete_old_files_on_export = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_delete_old_files_on_export
+        exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
+        check_analyse_texture = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_check_tex_analyse
+        texture_folder = pathlib.Path(context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_tex_analyse)
+    else:
+        stk_delete_old_files_on_export = context.preferences.addons[__package__].preferences.stk_delete_old_files_on_export
+        exportImages = context.preferences.addons[__package__].preferences.stk_export_images
+        check_analyse_texture = bpy.context.preferences.addons[__package__].preferences.stk_check_tex_analyse
+        texture_folder = pathlib.Path(context.preferences.addons[__package__].preferences.stk_tex_analyse)
 
     if stk_delete_old_files_on_export:
         os.chdir(sPath)
@@ -638,22 +642,27 @@ def savescene_callback(self, context, sPath):
     # Export the actual kart
     exportKart(self, sPath)
 
-    if bpy.app.version < (4, 2, 0):
-        exportImages = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_export_images
-    else:
-        exportImages = context.preferences.addons[stk_panel.__package__].preferences.stk_export_images
-
+    # check all texture in STK Projet
+    image_stk = []
+    l_tex = []
+    if check_analyse_texture:
+        l_tex += list(texture_folder.glob('**/*.png'))  # check texture PNG
+        l_tex += list(texture_folder.glob('**/*.jpeg'))  # check texture JPG
+        l_tex += list(texture_folder.glob('**/*.jpg'))  # check texture JPEG
+        for textures in l_tex:
+            image_stk.append(pathlib.Path(textures).name)
     if exportImages:
-        for i,curr in enumerate(bpy.data.images):
-            try:
-                if curr.filepath is None or len(curr.filepath) == 0: continue
-                abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
-                shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
-                #print(f"Copy Texture {abs_texture_path} to {sPath}")
-                #self.log.report({'INFO'}, 'copy texture ' + abs_texture_path + ' to ' + sPath)
-            except:
-                traceback.print_exc(file=sys.stdout)
-                self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
+            for i,curr in enumerate(bpy.data.images):
+                try:
+                    if curr.filepath is None or len(curr.filepath) == 0:
+                        continue
+                    abs_texture_path = bpy.path.abspath(curr.filepath) # check texture path
+                    if not pathlib.Path(abs_texture_path).name in image_stk:  # check if texture not in STK Projet
+                        shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
+                        print(f"Copy Texture {abs_texture_path} to {sPath}")
+                except:
+                    traceback.print_exc(file=sys.stdout)
+                    self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
 
     now = datetime.datetime.now()
     self.report({'INFO'}, "Kart export completed on " + now.strftime("%Y-%m-%d %H:%M"))
