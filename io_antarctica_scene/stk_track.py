@@ -752,7 +752,7 @@ class TrackExport:
 
                     parent = obj.parent
                     if parent and parent.animation_data:
-                        ipo = parent.animation_data.action.layers[0].strips[0].channelbags[0].fcurves
+                        ipo = parent.animation_data
             self.writeAnimationWithIPO(f, spm_name, obj, ipo)
 
         else:
