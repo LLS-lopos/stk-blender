@@ -73,4 +73,4 @@ il peut afficher de longue commande sur plusieur ligne
 
 
 ---
-### [retour acceuil](./../io_artiste.md)
+### [retour acceuil](./../doc_io_artiste.md)

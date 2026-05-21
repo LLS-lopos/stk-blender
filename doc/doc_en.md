@@ -72,4 +72,4 @@ It can display long commands over multiple lines.
 ![](./IMG/tree_03.jpeg)
 
 ---
-### [back to home](./../io_artiste.md)
+### [back to home](./../doc_io_artiste.md)
