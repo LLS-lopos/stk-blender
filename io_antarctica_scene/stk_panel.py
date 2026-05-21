@@ -20,13 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import bpy, os
 from collections import OrderedDict
 from bpy.types import Operator, AddonPreferences
-from . import stk_utils, stk_track_utils
+from . import stk_utils
 
 CONTEXT_OBJECT = 0
-CONTEXT_SCENE = 1
-CONTEXT_MATERIAL = 2
+CONTEXT_SCENE  = 1
+CONTEXT_MATERIAL  = 2
 
 datapath = stk_utils.getDataPath(os.path.dirname(__file__))
 
@@ -60,16 +61,6 @@ if os.path.exists(datapath):
 else:
     raise RuntimeError("(STK) Make sure the stkdata folder is installed, cannot locate it!!")
 
-def get_proxy(obj):
-    if bpy.app.version < (3, 0, 0):
-        if obj.proxy is not None:
-            return True
-    elif bpy.app.version >= (3, 0, 0):
-        if obj.library is not None or obj.override_library is not None:
-            return True
-    else:
-        return False
-
 class STK_TypeUnset(bpy.types.Operator):
     bl_idname = ("screen.stk_unset_type")
     bl_label = ("STK Object :: unset type")
@@ -78,7 +69,6 @@ class STK_TypeUnset(bpy.types.Operator):
         obj = context.object
         obj["type"] = ""
         return {'FINISHED'}
-
 
 class STK_MissingProps_Object(bpy.types.Operator):
     bl_idname = ("screen.stk_missing_props_" + str(CONTEXT_OBJECT))
@@ -106,7 +96,6 @@ class STK_MissingProps_Object(bpy.types.Operator):
 
         return {'FINISHED'}
 
-
 class STK_MissingProps_Scene(bpy.types.Operator):
     bl_idname = ("screen.stk_missing_props_" + str(CONTEXT_SCENE))
     bl_label = ("Create missing properties")
@@ -119,7 +108,6 @@ class STK_MissingProps_Scene(bpy.types.Operator):
         stk_utils.createProperties(scene, properties)
         return {'FINISHED'}
 
-
 class STK_MissingProps_Material(bpy.types.Operator):
     bl_idname = ("screen.stk_missing_props_" + str(CONTEXT_MATERIAL))
     bl_label = ("Create missing properties")
@@ -131,7 +119,6 @@ class STK_MissingProps_Material(bpy.types.Operator):
             properties[curr.id] = curr
         stk_utils.createProperties(material, properties)
         return {'FINISHED'}
-
 
 # ==== PANEL BASE ====
 class PanelBase:
@@ -154,9 +141,8 @@ class PanelBase:
                     else:
                         icon = 'TRIA_RIGHT'
 
-                row.operator(stk_utils.generateOpName("screen.stk_tglbool_", curr.fullid, curr.id), text=curr.name,
-                             icon=icon, emboss=False)
-                row.label(text=" ")  # force the operator to not maximize
+                row.operator(stk_utils.generateOpName("screen.stk_tglbool_", curr.fullid, curr.id), text=curr.name, icon=icon, emboss=False)
+                row.label(text=" ") # force the operator to not maximize
                 if state == "true":
                     if len(curr.subproperties) > 0:
                         box = layout.box()
@@ -171,9 +157,8 @@ class PanelBase:
                 if id in obj:
                     state = obj[id]
                     if state == "true":
-                        icon = 'CHECKBOX_HLT'
-                split.operator(stk_utils.generateOpName("screen.stk_tglbool_", curr.fullid, curr.id),
-                               text="                ", icon=icon, emboss=False)
+                       icon = 'CHECKBOX_HLT'
+                split.operator(stk_utils.generateOpName("screen.stk_tglbool_", curr.fullid, curr.id), text="                ", icon=icon, emboss=False)
 
                 if state == "true":
                     if len(curr.subproperties) > 0:
@@ -187,8 +172,7 @@ class PanelBase:
                 row.label(text=curr.name)
                 if curr.id in obj:
                     row.prop(obj, '["' + curr.id + '"]', text="")
-                    row.operator(stk_utils.generateOpName("screen.stk_apply_color_", curr.fullid, curr.id), text="",
-                                 icon='COLOR')
+                    row.operator(stk_utils.generateOpName("screen.stk_apply_color_", curr.fullid, curr.id), text="", icon='COLOR')
                 else:
                     row.operator('screen.stk_missing_props_' + str(contextLevel))
 
@@ -203,8 +187,7 @@ class PanelBase:
                         icon = 'CHECKBOX_DEHLT'
                         if value_id in curr_val:
                             icon = 'CHECKBOX_HLT'
-                        row.operator(stk_utils.generateOpName("screen.stk_set_", curr.fullid, curr.id + "_" + value_id),
-                                     text=curr.values[value_id].name, icon=icon)
+                        row.operator(stk_utils.generateOpName("screen.stk_set_", curr.fullid, curr.id + "_" + value_id), text=curr.values[value_id].name, icon=icon)
                 else:
                     row.operator('screen.stk_missing_props_' + str(contextLevel))
 
@@ -225,7 +208,7 @@ class PanelBase:
                     label = curr.values[curr_value].name
 
                 row.menu(curr.menu_operator_name, text=label)
-                # row.operator_menu_enum(curr.getOperatorName(), property="value", text=label)
+                #row.operator_menu_enum(curr.getOperatorName(), property="value", text=label)
 
                 if curr_value in curr.values and len(curr.values[curr_value].subproperties) > 0:
                     box = layout.box()
@@ -237,8 +220,7 @@ class PanelBase:
 
                 if curr.id in obj:
                     row.prop(obj, '["' + curr.id + '"]', text="")
-                    row.menu(stk_utils.generateOpName("STK_MT_object_menu_", curr.fullid, curr.id), text="",
-                             icon='TRIA_DOWN')
+                    row.menu(stk_utils.generateOpName("STK_MT_object_menu_", curr.fullid, curr.id), text="", icon='TRIA_DOWN')
                 else:
                     row.operator('screen.stk_missing_props_' + str(contextLevel))
 
@@ -253,7 +235,6 @@ class PanelBase:
                         row.prop(obj, '["' + curr.id + '"]', text="")
                 else:
                     row.operator('screen.stk_missing_props_' + str(contextLevel))
-
 
 # ==== OBJECT PANEL ====
 class STK_PT_Object_Panel(bpy.types.Panel, PanelBase):
@@ -321,6 +302,129 @@ class STK_PT_Scene_Panel(bpy.types.Panel, PanelBase):
 
             self.recursivelyAddProperties(properties, layout, obj, CONTEXT_SCENE)
 
+"""
+# ==== IMAGE PANEL ====
+class STK_OT_CreateImagePreview(bpy.types.Operator):
+    bl_idname = ("scene.stk_create_material_preview")
+    bl_label = ("STK :: create material preview")
+
+    name: bpy.props.StringProperty()
+
+    def execute(self, context):
+
+        try:
+            bpy.ops.texture.new()
+            bpy.data.textures[-1].name = "STKPreviewTexture"
+            bpy.data.textures["STKPreviewTexture"].type = 'IMAGE'
+            bpy.data.textures["STKPreviewTexture"].use_preview_alpha = True
+        except:
+            print("Exception caught in createPreviewTexture")
+            import traceback
+            import sys
+            traceback.print_exc(file=sys.stdout)
+
+        return {'FINISHED'}
+
+
+import os
+
+class ImagePickerMenu(bpy.types.Menu):
+    bl_idname = "STK_MT_image_menu"
+    bl_label  = "SuperTuxKart Image Menu"
+
+    def draw(self, context):
+        import bpy.path
+
+        objects = context.scene.objects
+
+        layout = self.layout
+        row = layout.row()
+        col = row.column()
+
+        blend_path = os.path.abspath(bpy.path.abspath("//"))
+        is_lib_node = ('is_stk_node' in context.scene and context.scene['is_stk_node'] == 'true')
+
+        i = 0
+        for curr in bpy.data.images:
+
+            if (curr.library is not None): continue
+            if (not is_lib_node and not os.path.abspath(bpy.path.abspath(curr.filepath)).startswith(blend_path)): continue
+
+            if (i % 20 == 0):
+                col = row.column()
+            i += 1
+            col.operator("scene.stk_select_image", text=curr.name).name=curr.name
+
+
+class STK_OT_Select_Image(bpy.types.Operator):
+    bl_idname = ("scene.stk_select_image")
+    bl_label = ("STK Object :: select image")
+
+    name: bpy.props.StringProperty()
+
+    def execute(self, context):
+        global selected_image
+        context.scene['selected_image'] = self.name
+
+        if "STKPreviewTexture" not in bpy.data.textures:
+            bpy.ops.scene.stk_create_material_preview()
+
+        if "STKPreviewTexture" in bpy.data.textures:
+            if self.name in bpy.data.images:
+                bpy.data.textures["STKPreviewTexture"].image = bpy.data.images[self.name]
+            else:
+                bpy.data.textures["STKPreviewTexture"].image = None
+        else:
+            print("STK Panel : can't create preview texture!")
+
+        if self.name in bpy.data.images:
+
+            properties = OrderedDict([])
+            for curr in STK_MATERIAL_PROPERTIES[1]:
+                properties[curr.id] = curr
+
+            createProperties(bpy.data.images[self.name], properties)
+
+        return {'FINISHED'}
+
+
+class STK_PT_Image_Panel(bpy.types.Panel, PanelBase):
+    bl_label = STK_MATERIAL_PROPERTIES[0]
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "scene"
+
+    m_current_image = ''
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+
+        try:
+            if "STKPreviewTexture" in bpy.data.textures:
+                layout.template_preview(bpy.data.textures["STKPreviewTexture"])
+            else:
+                layout.label(text="Sorry, no image preview available")
+        except:
+            layout.label(text="Sorry, no image preview available")
+
+        label = "Select an image"
+        if 'selected_image' in context.scene:
+            label = context.scene['selected_image']
+
+        self.m_op_name = "scene.stk_image_menu"
+        #row.label(label)
+        row.menu(self.m_op_name, text=label)
+
+        obj = getObject(context, CONTEXT_MATERIAL)
+        if obj is not None:
+
+            properties = OrderedDict([])
+            for curr in STK_MATERIAL_PROPERTIES[1]:
+                properties[curr.id] = curr
+
+            self.recursivelyAddProperties(properties, layout, obj, CONTEXT_MATERIAL)
+"""
 
 # Extension to the 'add' menu
 class STK_OT_Add_Object(bpy.types.Operator):
@@ -334,7 +438,6 @@ class STK_OT_Add_Object(bpy.types.Operator):
     value: bpy.props.EnumProperty(attr="values", name="values", default='banana',
                                            items=[('banana', 'Banana', 'Banana'),
                                                   ('item', 'Item (Gift Box)', 'Item (Gift Box)'),
-                                                  ('item_air', 'Item (Gift Box Air)', 'Item (Gift Box)'),
                                                   ('light', 'Light', 'Light'),
                                                   ('nitro_big', 'Nitro (Big)', 'Nitro can | 3.0 / 2.5 nitro (1.x / Evo) | big radius'),
                                                   ('nitro_small', 'Nitro (Small)', 'Nitro can | 1.0 nitro | small radius'),
@@ -363,7 +466,7 @@ class STK_OT_Add_Object(bpy.types.Operator):
                     # FIXME: create associated subproperties if any
                     curr['type'] = self.value
 
-                    if self.value in ['item', 'item_air']:
+                    if self.value == 'item':
                         curr.empty_display_type = 'CUBE'
                     elif self.value == 'nitro_big' or self.value == 'nitro_small' or self.value == 'nitro_air' :
                         curr.empty_display_type = 'CONE'
@@ -388,18 +491,30 @@ class StkPanelAddonPreferences(bpy.types.AddonPreferences):
         bl_idname = __package__
 
     stk_assets_path: bpy.props.StringProperty(
-        name="Assets (data) path",
-        subtype='DIR_PATH',
-    )
+            name="Assets (data) path",
+            subtype='DIR_PATH',
+            )
 
     stk_delete_old_files_on_export: bpy.props.BoolProperty(
-        name="Delete all old files when exporting a track in a folder (*.spm)",
+            name="Delete all old files when exporting a track in a folder (*.spm)",
+            default = False
+            )
+
+    stk_export_images: bpy.props.BoolProperty(
+            name="Copy texture files when exporting a kart, track, or library node",
+            default = False
+            )
+
+    stk_check_tex_analyse: bpy.props.BoolProperty(
+        name="Analyse Folder Texture",
+        description="for use Texture (data) path option",
         default=False
     )
 
-    stk_export_images: bpy.props.BoolProperty(
-        name="Copy texture files when exporting a kart, track, or library node",
-        default=False
+    stk_tex_analyse: bpy.props.StringProperty(
+        name="STK Texture (data) path",
+        subtype='DIR_PATH',
+        description="Check Your Folder Texture in stk-media-repo or stk-assets for the copy texture analyse",
     )
 
     def draw(self, context):
@@ -409,7 +524,7 @@ class StkPanelAddonPreferences(bpy.types.AddonPreferences):
         # layout.operator('screen.stk_pick_assets_path', icon='FILEBROWSER', text="Select...")
         layout.prop(self, "stk_delete_old_files_on_export")
         layout.prop(self, "stk_export_images")
-
+        layout.prop(self, "stk_check_tex_analyse")
 
 class STK_FolderPicker_Operator(bpy.types.Operator):
     bl_idname = "screen.stk_pick_assets_path"
@@ -429,7 +544,6 @@ class STK_FolderPicker_Operator(bpy.types.Operator):
         else:
             addon_prefs = context.preferences.addons[__package__].preferences
         addon_prefs.stk_assets_path = os.path.dirname(bpy.path.abspath(self.filepath))
-
         bpy.ops.wm.save_userpref()
         return {'FINISHED'}
 
@@ -437,10 +551,9 @@ class STK_FolderPicker_Operator(bpy.types.Operator):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
 
-
 # ==== QUICK EXPORT PANEL ====
 class STK_PT_Quick_Export_Panel(bpy.types.Panel):
-    bl_label = "Quick Exporter"
+    bl_label = "SuperTuxKart Exporter"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "scene"
@@ -453,11 +566,27 @@ class STK_PT_Quick_Export_Panel(bpy.types.Panel):
         row = layout.row()
 
         if bpy.app.version < (4, 2, 0):
-            assets_path = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
+            addon_prefs = context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences
         else:
-            assets_path = context.preferences.addons[__package__].preferences.stk_assets_path
+            addon_prefs = context.preferences.addons[__package__].preferences
 
-        if len(assets_path) > 0:
+        assets_path = addon_prefs.stk_assets_path
+        check_tex_analyse = addon_prefs.stk_check_tex_analyse
+        tex_analyse = addon_prefs.stk_tex_analyse
+
+        layout.prop(addon_prefs, 'stk_delete_old_files_on_export')
+        layout.prop(addon_prefs, 'stk_export_images')
+        layout.prop(addon_prefs, 'stk_check_tex_analyse')
+        row = layout.row()
+        if check_tex_analyse:
+            if tex_analyse is not None and len(tex_analyse) > 0:
+                row.label(text='Texture (data) path: ' + tex_analyse)
+            else:
+                row.label(text='Texture (data) path: [please select path] (Optionnal)')
+            row.operator('screen.stk_pick_texture_path', icon='FILEBROWSER', text="")
+
+        row = layout.row()
+        if assets_path is not None and len(assets_path) > 0:
             row.label(text='Assets (data) path: ' + assets_path)
         else:
             row.label(text='Assets (data) path: [please select path]')
@@ -465,6 +594,9 @@ class STK_PT_Quick_Export_Panel(bpy.types.Panel):
 
         if len(assets_path) == 0:
             return
+
+        # row = layout.row()
+        # row.prop(the_scene, 'stk_track_export_images', text="Copy texture files")
 
         row = layout.row()
         row.operator("screen.stk_kart_export", text="Export Kart", icon='AUTO')
@@ -476,3 +608,30 @@ class STK_PT_Quick_Export_Panel(bpy.types.Panel):
 
         if len(assets_path) == 0 and bpy.context.mode != 'OBJECT':
             row.enabled = False
+
+class STK_FolderTexturePicker_Operator(bpy.types.Operator):
+    bl_idname = "screen.stk_pick_texture_path"
+    bl_label = "Select the SuperTuxKart Texture assets (data) folder"
+
+    filepath: bpy.props.StringProperty(subtype="DIR_PATH")
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+        import bpy.path
+        import os.path
+        if bpy.app.version < (4, 2, 0):
+            addon_prefs = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences
+        else:
+            addon_prefs = bpy.context.preferences.addons[__package__].preferences
+        addon_prefs.stk_tex_analyse = os.path.dirname(bpy.path.abspath(self.filepath))
+        bpy.ops.wm.save_userpref()
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+# TODO: refactoring FolderPicker Operator
