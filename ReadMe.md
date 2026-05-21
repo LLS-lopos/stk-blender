@@ -100,3 +100,8 @@ io_artiste offers a node editor specifically for launching test creations via va
 - operator : are essential nodes for launching the test(s)
 - mode : launches the different existing game modes
 - debug : debug and additional options
+
+### Documentation Addon Blender io_artiste
+
+- [version fr](./doc/doc_fr.md)
+- [version en](./doc/doc_en.md)
