@@ -1,10 +1,9 @@
 import bpy
-
 from ...base.node_base import node
 
 
-class STK_race(node):
-    bl_idname = 'STK_Race'
+class STK_racing(node):
+    bl_idname = 'STK_Racing'
     bl_label = 'Racing'
     bl_icon = 'NONE'
 

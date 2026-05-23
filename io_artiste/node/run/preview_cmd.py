@@ -1,11 +1,10 @@
 import bpy
-
 from ...base.node_base import node
 
 
-class STK_info(node):
-    bl_idname = 'STK_Info'
-    bl_label = 'Info'
+class STK_preview_cmd(node):
+    bl_idname = 'STK_Preview_cmd'
+    bl_label = 'Preview CMD'
     bl_icon = 'INFO'
 
     # Property to store the value to display
@@ -14,7 +13,7 @@ class STK_info(node):
 
     def init(self, context):
         # Create input socket
-        self.node_input("NodeSocketString", "info_input", "Info", "")
+        self.node_input("NodeSocketString", "preview_input", "preview", "")
 
     def draw_buttons(self, context, layout):
         # Display the value in the interface
@@ -51,7 +50,7 @@ class STK_info(node):
         return self.doc
 
     def format_text(self, text):
-        """Format the text by adding line breaks every 70 characters or 8 words."""
+        """Format the text by adding line breaks every 60 characters or 8 words."""
         words = text.split()
         formatted_lines = []
         current_line = []
@@ -61,7 +60,7 @@ class STK_info(node):
             word_length = len(word)
 
             # Check if adding the word exceeds the character or word limit
-            if current_length + word_length + len(current_line) > 70 or len(current_line) >= 8:
+            if current_length + word_length + len(current_line) > 60 or len(current_line) >= 8:
                 formatted_lines.append(' '.join(current_line))
                 current_line = [word]
                 current_length = word_length

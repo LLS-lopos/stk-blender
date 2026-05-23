@@ -5,6 +5,7 @@
 /tmp
 /.venv
 /.idea
+/.venv
 
 
 **/*.pyc

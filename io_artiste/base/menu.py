@@ -1,8 +1,8 @@
 import bpy
-from ..node.init import (cli, init_stk, demo_info, graphic, windows)
+from ..node.debug import (direct_run)
+from ..node.init import (cli, init_stk)
 from ..node.run import (runner, preview_cmd)
-from ..node.mode import (racing, leader, time_trial, battle, capture_flag, cutscene, egg_party, soccer)
-from ..node.debug import (direct_run, controller, graphic_d, kart, track)
+from ..node.mode import (racing, battle, soccer, demo)
 
 class STKoperator(bpy.types.Menu):
     bl_idname = 'NODE_MT_STK_Operator'
@@ -20,6 +20,10 @@ class STKoperator(bpy.types.Menu):
         layout.operator("node.add_node", text=demo_info.STK_demo_mode.bl_label).type = demo_info.STK_demo_mode.bl_idname
         layout.separator()
         layout.operator("node.add_node", text=runner.STK_run.bl_label).type = runner.STK_run.bl_idname
+        layout.separator()
+        layout.operator("node.add_node", text=cli.STK_cli.bl_label).type = cli.STK_cli.bl_idname
+        layout.operator("node.add_node", text=direct_run.STK_direct_run.bl_label).type = direct_run.STK_direct_run.bl_idname
+
 
 class STKmode(bpy.types.Menu):
     bl_idname = 'NODE_MT_STK_mode'
@@ -28,6 +32,11 @@ class STKmode(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
+        layout.operator("node.add_node", text=demo.STK_demo.bl_label).type = demo.STK_demo.bl_idname
+        layout.separator()
+        layout.operator("node.add_node", text=battle.STK_battle.bl_label).type = battle.STK_battle.bl_idname
+        layout.operator("node.add_node", text=racing.STK_racing.bl_label).type = racing.STK_racing.bl_idname
+        layout.operator("node.add_node", text=soccer.STK_soccer.bl_label).type = soccer.STK_soccer.bl_idname
         layout.operator("node.add_node", text=racing.STK_race.bl_label).type = racing.STK_race.bl_idname
         layout.operator("node.add_node", text=leader.STK_leader.bl_label).type = leader.STK_leader.bl_idname
         layout.operator("node.add_node", text=time_trial.STK_time_trial.bl_label).type = time_trial.STK_time_trial.bl_idname
@@ -45,6 +54,7 @@ class STKdebug(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
+        layout.operator("node.add_node", text=preview_cmd.STK_preview_cmd.bl_label).type = preview_cmd.STK_preview_cmd.bl_idname
         layout.operator("node.add_node", text=direct_run.STK_direct_run.bl_label).type = direct_run.STK_direct_run.bl_idname
         layout.operator("node.add_node", text=controller.STK_debug_controller.bl_label).type = controller.STK_debug_controller.bl_idname
         layout.operator("node.add_node", text=graphic_d.STK_debug_graphique.bl_label).type = graphic_d.STK_debug_graphique.bl_idname

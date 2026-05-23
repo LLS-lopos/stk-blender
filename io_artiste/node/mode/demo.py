@@ -1,50 +1,30 @@
 import bpy
+
 from ...base.node_base import node
 
 
-class STK_battle(node):
-    bl_idname = 'STK_Battle'
-    bl_label = 'Battle'
+class STK_demo(node):
+    bl_idname = 'STK_demo'
+    bl_label = 'Demo'
     bl_icon = 'NONE'
 
     s_input: bpy.props.StringProperty(name="input", default="")
     s_output: bpy.props.StringProperty(name="output", default="")
 
-    num_kart: bpy.props.IntProperty(
-        name="N_karts",
-        default=3, 
-        min=1, 
-        max=20, 
-        update=lambda self, context: self.update())
-
-    choise_kart: bpy.props.StringProperty(
-        name="Kart User",
-        description="Select a kart",
-        default="tux",
-        update=lambda self, context: self.update())
-    
-    choise_track: bpy.props.StringProperty(
-        name="Track Choice",
-        description="Select a track",
-        default="stadium",
-        update=lambda self, context: self.update())
-    
-    battle_type: bpy.props.BoolProperty(name="time/live", default=False, update=lambda self, context: self.update())
+    times: bpy.props.IntProperty(name="start", default=60, min=1, update=lambda self, context: self.update())
+    tracks: bpy.props.StringProperty(name="track", default="hacienda", update=lambda self, context: self.update())
+    laps: bpy.props.IntProperty(name="laps", default=3, min=1, update=lambda self, context: self.update())
+    karts: bpy.props.IntProperty(name="Karts", default=4, min=0, max=20, update=lambda self, context: self.update())
 
     def init(self, context):
-        self.node_input("NodeSocketString", 'Battle', 'battle', "")
-        self.node_output('NodeSocketString', 'Battle', 'battle', "")
+        self.node_input("NodeSocketString", "input_0", "", "")
+        self.node_output("NodeSocketString", "output_0", "", "")
 
     def draw_buttons(self, context, layout):
-        ligne = layout.row()
-        ligne.prop(self, "num_kart")
-        #ligne.prop(self, "battle_type")
-
-        ligne = layout.row()
-        ligne.prop(self, "choise_track")
-
-        ligne = layout.row()
-        ligne.prop(self, "choise_kart")
+        layout.prop(self, "times")
+        layout.prop(self, "tracks")
+        layout.prop(self, "laps")
+        layout.prop(self, "karts")
 
     def process(self, context, id, path):
         # Check for input socket existence
@@ -76,14 +56,11 @@ class STK_battle(node):
             self.s_output = ""
             if self.s_input != "":
                 self.s_output += self.s_input + " "
-
-            self.s_output += f"--numkarts={self.num_kart}"
-            self.s_output += f" --track={self.choise_track}"
-            self.s_output += f" --kart={self.choise_kart}"
-            self.s_output += f" --mode=2"
-
-            self.outputs[0].default_value = str(self.s_output)
+            self.s_output += f"--demo-mode={self.times} --demo-tracks={self.tracks} --demo-laps={self.laps} --demo-karts={self.karts}"
+            self.outputs[0].default_value = self.s_output
         return self.s_output
 
+
     def update(self):
+        """Called when the node needs to be updated"""
         self.process(bpy.context, None, None)

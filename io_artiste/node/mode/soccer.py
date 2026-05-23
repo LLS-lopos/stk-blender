@@ -8,59 +8,27 @@ class STK_soccer(node):
     bl_label = 'Soccer'
     bl_icon = 'NONE'
 
-    entrer: bpy.props.StringProperty(name="input", default="")
-    sortie: bpy.props.StringProperty(name="output", default="")
+    s_input: bpy.props.StringProperty(name="input", default="")
+    s_output: bpy.props.StringProperty(name="output", default="")
 
     num_kart: bpy.props.IntProperty(
         name="N_karts",
         default=3, min=1, max=20, update=lambda self, context: self.update())
 
-    choix_kart: bpy.props.EnumProperty(
+    choise_kart: bpy.props.StringProperty(
         name="Kart User",
         description="Select a kart",
-        items=[
-            ("adiumy", "Adiumy", "", "", 0),
-            ("amanda", "Amanda", "", "", 1),
-            ("beastie", "Sophia", "", "", 2),
-            ("emule", "Emule", "", "", 3),
-            ("gavroche", "Gavroche", "", "", 4),
-            ("gnu", "GNU", "", "", 5),
-            ("hexley", "Hexley", "", "", 6),
-            ("kiki", "Kiki", "", "", 7),
-            ("konqi", "Konqi", "", "", 8),
-            ("nolok", "Nolok", "", "", 9),
-            ("pidgin", "Pidgin", "", "", 10),
-            ("puffy", "Puffy", "", "", 11),
-            ("sara_the_racer", "Pepper", "", "", 12),
-            ("sara_the_wizard", "Sara", "", "", 13),
-            ("suzanne", "Suzanne", "", "", 14),
-            ("tux", "Tux", "", "", 15),
-            ("wilber", "Wilber", "", "", 16),
-            ("xue", "Xue", "", "", 17),
-            ("custom", "Custom", "Custom Kart", "", 18)
-        ],
         default="tux",
-        update=lambda self, context: self.update()
-    )
-    choix_track: bpy.props.EnumProperty(
+        update=lambda self, context: self.update())
+    
+    choise_track: bpy.props.StringProperty(
         name="Track Choice",
         description="Select a track",
-        items=[
-            ("hole_drop", "Hole Drop", "Soccer track", "", 0),
-            ("icy_soccer_field", "Icy Soccer Field", "Soccer track", "", 1),
-            ("lasdunassoccer", "Las Dunas Soccer", "Soccer track", "", 2),
-            ("oasis", "Oasis", "Soccer track", "", 3),
-            ("soccer_field", "Soccer Field", "Soccer track", "", 4),
-            ("custom", "Custom", "Custom Track", "", 5)
-        ],
-        default="custom",
-        update=lambda self, context: self.update()
-    )
+        default="icy_soccer_field",
+        update=lambda self, context: self.update())
 
     time_limit: bpy.props.IntProperty(name="time limite(s)", description="time define in seconde", default=600,
                                       update=lambda self, context: self.update())
-    custom_track: bpy.props.StringProperty(name="Other track", default="", update=lambda self, context: self.update())
-    custom_kart: bpy.props.StringProperty(name="Other kart", default="", update=lambda self, context: self.update())
 
     def init(self, context):
         self.node_input("NodeSocketString", "input_0", "", "")
@@ -70,14 +38,10 @@ class STK_soccer(node):
         layout.prop(self, "num_kart")
 
         ligne = layout.row()
-        ligne.prop(self, "choix_track")
-        if self.choix_track == "custom":
-            ligne.prop(self, "custom_track")
+        ligne.prop(self, "choise_track")
 
         ligne = layout.row()
-        ligne.prop(self, "choix_kart")
-        if self.choix_kart == "custom":
-            ligne.prop(self, "custom_kart")
+        ligne.prop(self, "choise_kart")
 
         ligne = layout.row()
         ligne.prop(self, "time_limit")
@@ -97,37 +61,30 @@ class STK_soccer(node):
                     if hasattr(from_node, "process"):
                         try:
                             value = from_node.process(context, id, path)
-                            self.entrer = str(value)
+                            self.s_input = str(value)
                         except:
                             pass
 
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
-                        self.entrer = str(from_socket.default_value)
+                        self.s_input = str(from_socket.default_value)
             else:
-                self.entrer = ""
+                self.s_input = ""
 
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
-            self.sortie = ""
-            if self.entrer != "":
-                self.sortie += self.entrer + " "
+            self.s_output = ""
+            if self.s_input != "":
+                self.s_output += self.s_input + " "
 
-            self.sortie += f" --numkarts={self.num_kart}"
+            self.s_output += f" --numkarts={self.num_kart}"
+            self.s_output += f" --track={self.choise_track}"
+            self.s_output += f" --kart={self.choise_kart}"
+            self.s_output += f" --time-limit={self.time_limit}"
+            self.s_output += f" --mode=3"
 
-            if self.choix_track != "custom":
-                self.sortie += f" --track={self.choix_track}"
-            else:
-                self.sortie += f" --track={self.custom_track}"
-
-            if self.choix_kart != "custom":
-                self.sortie += f" --kart={self.choix_kart}"
-            else:
-                self.sortie += f" --kart={self.custom_kart}"
-            self.sortie += f" --time-limit={self.time_limit}"
-            self.sortie += f" --mode=3"
-            self.outputs[0].default_value = str(self.sortie)
-        return self.sortie
+            self.outputs[0].default_value = str(self.s_output)
+        return self.s_output
 
     def update(self):
         self.process(bpy.context, None, None)

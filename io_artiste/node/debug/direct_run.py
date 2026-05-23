@@ -42,7 +42,6 @@ class STK_direct_run(node):
                             self.s_input = str(value)
                         except:
                             pass
-
                     # If that fails, try to get the default_value
                     if hasattr(from_socket, "default_value"):
                         self.s_input = str(from_socket.default_value)
@@ -54,7 +53,6 @@ class STK_direct_run(node):
             self.s_output = ""
             if self.s_input != "":
                 self.s_output += self.s_input + " "
-
             
             if self.start_screen: self.s_output += f" --no-start-screen"
             if self.race_now: self.s_output += f" --race-now"
