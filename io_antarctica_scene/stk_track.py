@@ -1199,6 +1199,9 @@ class TrackExport:
         TEST["out"] = L_TEST_OUT  # for debug
         TEST["break"] = L_TEST_BREAK  # for debug
 
+        import pprint
+        pprint(TEST)
+
         drivelineExporter = stk_track_utils.DrivelineExporter(self.log)
         navmeshExporter = stk_track_utils.NavmeshExporter(self.log)
         exporters = [drivelineExporter, stk_track_utils.ParticleEmitterExporter(self.log), stk_track_utils.BlenderHairExporter(self.log),
