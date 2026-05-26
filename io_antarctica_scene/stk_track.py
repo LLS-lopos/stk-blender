@@ -1199,8 +1199,8 @@ class TrackExport:
         TEST["out"] = L_TEST_OUT  # for debug
         TEST["break"] = L_TEST_BREAK  # for debug
 
-        import pprint
-        pprint(TEST)
+        import pprint  # for debug
+        pprint.pprint(TEST)  # for debug
 
         drivelineExporter = stk_track_utils.DrivelineExporter(self.log)
         navmeshExporter = stk_track_utils.NavmeshExporter(self.log)
