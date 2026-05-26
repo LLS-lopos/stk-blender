@@ -1136,6 +1136,10 @@ class TrackExport:
                 return
 
         # check all texture in STK Projet
+        TEST = {} # for debug
+        L_TEST = [] # for debug
+        L_TEST_OUT = [] # for debug
+        L_TEST_BREAK = [] # for debug
         image_stk = []
         l_tex = []
         if is_custom_preference:
@@ -1152,9 +1156,11 @@ class TrackExport:
                 l_tex += list(texture_folder.glob('**/*.jpg'))  # check texture JPEG
                 for textures in l_tex:
                     image_stk.append(pathlib.Path(textures).name)
+        TEST["Analyse"] = l_tex  # for debug
         if is_custom_preference:
             if is_copy_texture:
                 for i,curr in enumerate(bpy.data.images):
+                    L_TEST.append((i, curr, bpy.path.abspath(curr.filepath)))  # for debug
                     try:
                         if curr.filepath is None or len(curr.filepath) == 0:
                             continue
@@ -1162,12 +1168,18 @@ class TrackExport:
                         if not pathlib.Path(abs_texture_path).name in image_stk:  # check if texture not in STK Projet
                             shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
                             print(f"Copy Texture {abs_texture_path} to {sPath}")
+                        else:
+                            print(f"Copy Texture {abs_texture_path} in STK Project")
+                        L_TEST_OUT.append(abs_texture_path)  # for debug
                     except:
+                        L_TEST_BREAK.append(curr.filepath)  # for debug
                         traceback.print_exc(file=sys.stdout)
+                        print(f"Failed to copy texture  {curr.filepath}")
                         self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
         else:
             if exportImages:
                 for i,curr in enumerate(bpy.data.images):
+                    L_TEST.append((i, curr, bpy.path.abspath(curr.filepath)))  # for debug
                     try:
                         if curr.filepath is None or len(curr.filepath) == 0:
                             continue
@@ -1175,9 +1187,17 @@ class TrackExport:
                         if not pathlib.Path(abs_texture_path).name in image_stk:  # check if texture not in STK Projet
                             shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
                             print(f"Copy Texture {abs_texture_path} to {sPath}")
+                        else:
+                            print(f"Copy Texture {abs_texture_path} in STK Project")
+                        L_TEST_OUT.append(abs_texture_path)  # for debug
                     except:
+                        L_TEST_BREAK.append(curr.filepath)  # for debug
                         traceback.print_exc(file=sys.stdout)
+                        print(f"Failed to copy texture  {curr.filepath}")
                         self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
+        TEST["data"] = L_TEST  # for debug
+        TEST["out"] = L_TEST_OUT  # for debug
+        TEST["break"] = L_TEST_BREAK  # for debug
 
         drivelineExporter = stk_track_utils.DrivelineExporter(self.log)
         navmeshExporter = stk_track_utils.NavmeshExporter(self.log)
