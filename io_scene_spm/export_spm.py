@@ -467,12 +467,10 @@ def searchMaterialForImage(material, uv_num):
                 child = shader_node.inputs['Base Color'].links[0].from_node
                 if type(child) is bpy.types.ShaderNodeTexImage and uv_num == 1:
                     image_name = os.path.basename(bpy.path.abspath(child.image.filepath))
-                elif type(child).__name__ in ['ShaderNodeMixRGB', 'ShaderNodeMix']:
-                    color_socks = [s for s in child.inputs if s.type == 'RGBA']
-                    uvOne = color_socks[0].links[0].from_node if len(color_socks) > 0 and color_socks[
-                        0].is_linked else None
-                    uvTwo = color_socks[1].links[0].from_node if len(color_socks) > 1 and color_socks[
-                        1].is_linked else None
+                elif type(child).__name__ in ['ShaderNodeMixRGB', 'ShaderNodeMix']:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
+                    color_socks = [s for s in child.inputs if s.type == 'RGBA']  # check socket
+                    uvOne = color_socks[0].links[0].from_node if len(color_socks) > 0 and color_socks[0].is_linked else None
+                    uvTwo = color_socks[1].links[0].from_node if len(color_socks) > 1 and color_socks[1].is_linked else None
                     if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
                         image_name = os.path.basename(uvOne.image.filepath)
                     elif type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:

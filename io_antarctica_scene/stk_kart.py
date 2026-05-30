@@ -43,7 +43,7 @@ def saveNitroEmitter(self, f, lNitroEmitter, path):
         f.write('    <nitro-emitter-b position = "%f %f %f" />\n' \
                     % (lNitroEmitter[0].location.x, lNitroEmitter[0].location.z, lNitroEmitter[0].location.y))
         f.write('  </nitro-emitter>\n')
-        
+
 
 # ------------------------------------------------------------------------------
 
@@ -231,7 +231,7 @@ def saveAnimations(self, f, kart_version, export_version):
                 # but otherwise work). A kart designed as v4 can be exported as v3
                 # (again missing on the new animations), so kart designers can adopt the v4 format
                 # in their blends but still make the kart available for 1.x users.
-                # This will remain the case in the foreseeable future. 
+                # This will remain the case in the foreseeable future.
                 if export_version == 3:
                     if  markerName in \
                        ["straight", "right", "left", "start-winning", "start-winning-loop",
@@ -638,67 +638,31 @@ def savescene_callback(self, context, sPath):
     is_copy_texture = ("custom_copy_texture" in bpy.context.scene and bpy.context.scene["custom_copy_texture"] == 'true')
     is_analyse_texture = ("custom_analyse_texture" in bpy.context.scene and bpy.context.scene["custom_analyse_texture"] == 'true')
 
-    if is_custom_preference == True:
+    if is_custom_preference:
         if is_delete_old_file:
-            os.chdir(sPath)
-            old_model_files = [f for f in os.listdir(sPath) if f.endswith(".spm")]
-            for f in old_model_files:
-                print("Deleting ", f)
-                os.remove(f)
+            stk_utils.delete_spm(sPath)
     else:
         if stk_delete_old_files_on_export:
-            os.chdir(sPath)
-            old_model_files = [f for f in os.listdir(sPath) if f.endswith(".spm")]
-            for f in old_model_files:
-                print("Deleting ", f)
-                os.remove(f)
+            stk_utils.delete_spm(sPath)
 
     # Export the actual kart
     exportKart(self, sPath)
 
     # check all texture in STK Projet
     image_stk = []
-    l_tex = []
     if is_custom_preference:
         if is_analyse_texture:
-            l_tex += list(texture_folder.glob('**/*.png'))  # check texture PNG
-            l_tex += list(texture_folder.glob('**/*.jpeg'))  # check texture JPG
-            l_tex += list(texture_folder.glob('**/*.jpg'))  # check texture JPEG
-            for textures in l_tex:
-                image_stk.append(pathlib.Path(textures).name)
+            image_stk = stk_utils.check_texture_name(texture_folder)
     else:
         if check_analyse_texture:
-            l_tex += list(texture_folder.glob('**/*.png'))  # check texture PNG
-            l_tex += list(texture_folder.glob('**/*.jpeg'))  # check texture JPG
-            l_tex += list(texture_folder.glob('**/*.jpg'))  # check texture JPEG
-            for textures in l_tex:
-                image_stk.append(pathlib.Path(textures).name)
+            image_stk = stk_utils.check_texture_name(texture_folder)
+
     if is_custom_preference:
         if is_copy_texture:
-            for i, curr in enumerate(bpy.data.images):
-                try:
-                    if curr.filepath is None or len(curr.filepath) == 0:
-                        continue
-                    abs_texture_path = bpy.path.abspath(curr.filepath)  # check texture path
-                    if not pathlib.Path(abs_texture_path).name in image_stk:  # check if texture not in STK Projet
-                        shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
-                        print(f"Copy Texture {abs_texture_path} to {sPath}")
-                except:
-                    traceback.print_exc(file=sys.stdout)
-                    self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
+            stk_utils.copy_texture(sPath, image_stk, operator=self)
     else:
         if exportImages:
-            for i, curr in enumerate(bpy.data.images):
-                try:
-                    if curr.filepath is None or len(curr.filepath) == 0:
-                        continue
-                    abs_texture_path = bpy.path.abspath(curr.filepath)  # check texture path
-                    if not pathlib.Path(abs_texture_path).name in image_stk:  # check if texture not in STK Projet
-                        shutil.copy(abs_texture_path, sPath)  # copy all texture used in blender file
-                        print(f"Copy Texture {abs_texture_path} to {sPath}")
-                except:
-                    traceback.print_exc(file=sys.stdout)
-                    self.log.report({'WARNING'}, 'Failed to copy texture ' + curr.filepath)
+            stk_utils.copy_texture(sPath, image_stk, operator=self)
 
     now = datetime.datetime.now()
     self.report({'INFO'}, "Kart export completed on " + now.strftime("%Y-%m-%d %H:%M"))
@@ -735,10 +699,29 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
         code = context.scene['name']
         folder = os.path.join(assets_path, 'karts')
 
-        if not os.path.exists(folder): os.makedirs(folder, exist_ok=True)
-        self.filepath = os.path.join(folder, code)
-        if not os.path.exists(self.filepath): os.makedirs(self.filepath, exist_ok=True)
+        if 'name' not in context.scene or len(context.scene['name']) == 0:
+            self.report({'ERROR'}, "Please specify a name")
+            return {'FINISHED'}
+        code = context.scene['name']
 
+        assets_path = ""
+        if bpy.app.version < (4, 2, 0):
+            assets_path = bpy.context.preferences.addons[os.path.basename(os.path.dirname(__file__))].preferences.stk_assets_path
+        else:
+            assets_path = bpy.context.preferences.addons[__package__].preferences.stk_assets_path
+
+        if assets_path is None or len(assets_path) < 0:
+            self.report({'ERROR'}, "Please select the export path in the add-on preferences or quick exporter panel")
+            return {'FINISHED'}
+
+        if 'is_wip_kart' in context.scene and context.scene['is_wip_kart'] == 'true':
+            folder = os.path.join(assets_path, 'wip-karts', code)
+        else:
+            folder = os.path.join(assets_path, 'karts', code)
+
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        self.filepath = os.path.join(folder, code)
         return self.execute(context)
 
     def execute(self, context):
