@@ -699,10 +699,10 @@ class STK_Kart_Export_Operator(bpy.types.Operator):
         code = context.scene['name']
         folder = os.path.join(assets_path, 'karts')
 
-        if 'name' not in context.scene or len(context.scene['name']) == 0:
-            self.report({'ERROR'}, "Please specify a name")
+        if 'code' not in context.scene or len(context.scene['code']) == 0:
+            self.report({'ERROR'}, "Please specify a code name (folder name)")
             return {'FINISHED'}
-        code = context.scene['name']
+        code = context.scene['code']
 
         assets_path = ""
         if bpy.app.version < (4, 2, 0):
