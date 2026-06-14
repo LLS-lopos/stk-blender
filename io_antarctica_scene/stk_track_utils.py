@@ -447,7 +447,7 @@ class LibraryNodeExporter:
         self.log = log
 
     def processObject(self, object, stktype):
-        if get_proxy(object):
+        if object.library is not None or object.override_library is not None:
             self.m_objects.append(object)
             return True
         else:
@@ -455,7 +455,22 @@ class LibraryNodeExporter:
 
     def export(self, f):
         import re
+        filter_m_object = []
+        new_m_object = []
+        # check all object library
         for obj in self.m_objects:
+            if obj.parent:
+                if obj.parent.type == 'ARMATURE':
+                    filter_m_object.append([obj.parent, obj.name])
+            else: filter_m_object.append([obj, obj.name])
+        # Filter object library for check armature animation object
+        for i, obj in enumerate(filter_m_object):
+            if obj[0].type == "ARMATURE":
+                if obj[0].name != obj[1]:
+                    new_m_object.append(obj)
+            else: new_m_object.append(obj)
+
+        for obj, obj_name in new_m_object:
             try:
                 if bpy.app.version < (3, 0, 0):
                     path_parts = re.split("/|\\\\", obj.proxy.library.filepath)
@@ -469,12 +484,13 @@ class LibraryNodeExporter:
                 # origin
                 originXYZ = stk_utils.getXYZHPRString(obj)
 
-                f.write('  <library name="%s" id=\"%s\" %s' % (lib_name, obj.name, originXYZ))
+                f.write('  <library name="%s" id=\"%s\" %s' % (lib_name, obj_name, originXYZ))
                 if_condition = stk_utils.getObjectProperty(obj, "if", "")
                 if len(if_condition) > 0:
                     f.write(' if=\"%s\"' % if_condition)
                 f.write('>\n') # Close the library XML start tag
-                if obj.animation_data and obj.animation_data.action and obj.animation_data.action.fcurves and len(obj.animation_data.action.fcurves) > 0:
+                anim_data = stk_utils.get_fcurves(obj.animation_data)
+                if anim_data:
                     stk_track.writeIPO(self, f, obj.animation_data)
                 f.write('  </library>\n')
             except:
