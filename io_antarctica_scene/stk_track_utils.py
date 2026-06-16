@@ -480,17 +480,28 @@ class LibraryNodeExporter:
         filter_m_object = []
         new_m_object = []
         # check all object library
+        import pprint
         for obj in self.m_objects:
-            if obj.parent:
-                if obj.parent.type == 'ARMATURE':
-                    filter_m_object.append([obj.parent, obj.name])
+            if obj.parent and obj.parent.type == 'ARMATURE':
+                filter_m_object.append([obj.parent, obj.name])
             else: filter_m_object.append([obj, obj.name])
+        pprint.pprint(filter_m_object)
         # Filter object library for check armature animation object
-        for i, obj in enumerate(filter_m_object):
-            if obj[0].type == "ARMATURE":
-                if obj[0].name != obj[1]:
-                    new_m_object.append(obj)
-            else: new_m_object.append(obj)
+        for parent, child_name in filter_m_object:
+            if parent.type == "ARMATURE":
+                try:
+                    if parent.library is not None:
+                        path_parts = re.split("/|\\\\", parent.library.filepath)
+                    else:
+                        path_parts = re.split("/|\\\\", parent.override_library.reference.library.filepath)
+                    lib_name = path_parts[-2]
+                except:
+                    lib_name = ""
+                if child_name.startswith(lib_name):
+                    new_m_object.append([parent, child_name])
+                    # Sinon, ignorer (c'est un IK target, etc.)
+            else:
+                new_m_object.append([parent, child_name])
 
         for obj, obj_name in new_m_object:
             try:
