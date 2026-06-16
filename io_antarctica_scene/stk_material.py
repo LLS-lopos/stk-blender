@@ -109,17 +109,15 @@ class ANTARCTICA_PT_properties(Panel, stk_panel.PanelBase):
                         row.label(text="Backing image: " + col.image.name)
                     elif type(col) is bpy.types.ShaderNodeVertexColor:
                         row.label(text="Backing image: (vertex color)")
-                    elif type(col).__name__ in ['ShaderNodeMixRGB', 'ShaderNodeMix']:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
+                    elif type(col) in [bpy.types.ShaderNodeMixRGB, bpy.types.ShaderNodeMix]:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
                         # Only the first image in a mix shader can be configured
                         try:
-                            if type(col).__name__ == 'ShaderNodeMix' and col.data_type != 'RGBA':
+                            if type(col) == bpy.types.ShaderNodeMix and col.data_type != 'RGBA':
                                 print(f"Mix node with data_type not 'RGBA', skipping RGBA extraction for {col.name}")
                                 row.label(text="Backing image: (none)")
                             else:
                                 color_socks = [s for s in col.inputs if s.type == 'RGBA']  # check socket
-                                uvOne = None
-                                if color_socks:
-                                    uvOne = color_socks[0].links[0].from_node if color_socks[0].is_linked else None
+                                uvOne = color_socks[0].links[0].from_node
                                 if type(uvOne) is bpy.types.ShaderNodeTexImage:
                                     row.label(text="Backing image: " + uvOne.image.name)
                                 else:
@@ -314,16 +312,13 @@ def writeMaterialsFile(self, sPath):
                             child = inp.links[0].from_node
                             if type(child) is bpy.types.ShaderNodeTexImage:
                                 sImage = child.image
-                            elif type(child).__name__ in ['ShaderNodeMixRGB', 'ShaderNodeMix']:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
-                                if type(child).__name__ == 'ShaderNodeMix' and child.data_type != 'RGBA':
+                            elif type(child) in [bpy.types.ShaderNodeMixRGB, bpy.types.ShaderNodeMix]:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
+                                if type(child) == bpy.types.ShaderNodeMix and child.data_type != 'RGBA':
                                     print(f"Mix node with data_type not 'RGBA', skipping RGBA extraction for {child.name}")
                                 else:
                                     color_socks = [s for s in child.inputs if s.type == 'RGBA']  # check socket
-                                    uvOne = None
-                                    uvTwo = None
-                                    if color_socks:
-                                        uvOne = color_socks[0].links[0].from_node if color_socks[0].is_linked else None
-                                        uvTwo = color_socks[1].links[0].from_node if color_socks[1].is_linked else None
+                                    uvOne = color_socks[0].links[0].from_node if color_socks[0].is_linked else None
+                                    uvTwo = color_socks[1].links[0].from_node if len(color_socks) > 1 and color_socks[1].is_linked else None
                                     if type(uvOne) is bpy.types.ShaderNodeTexImage:
                                         sImage = uvOne.image
                                     # Use image specified in node tree only if not already specified
