@@ -443,18 +443,26 @@ def searchMaterialForImage(material, uv_num):
                 # Get the connected node
                 child = shader_node.inputs['Base Color'].links[0].from_node
                 if type(child) is bpy.types.ShaderNodeTexImage and uv_num == 1:
-                    image_name = os.path.basename(child.image.filepath)
-                elif type(child) in [bpy.types.ShaderNodeMixRGB, bpy.types.ShaderNodeMix]:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
-                    if type(child) == bpy.types.ShaderNodeMix and child.data_type != 'RGBA':
-                        return image_name
+                    image_name = os.path.basename(bpy.path.abspath(child.image.filepath))
+                elif type(child) is bpy.types.ShaderNodeMixRGB:  # blender < 3.4
+                    uvOne = child.inputs['Color1'].links[0].from_node
+                    uvTwo = child.inputs['Color2'].links[0].from_node if child.inputs['Color2'].is_linked else None
+                    if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
+                        image_name = os.path.basename(uvOne.image.filepath)
+                    elif type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
+                        image_name = os.path.basename(uvTwo.image.filepath)
                     else:
-                        color_socks = [s for s in child.inputs if s.type == 'RGBA']  # check socket
-                        uvOne = color_socks[0].links[0].from_node
-                        uvTwo = color_socks[1].links[0].from_node
-                        if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
-                            image_name = os.path.basename(uvOne.image.filepath)
-                        elif type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
-                            image_name = os.path.basename(uvTwo.image.filepath)
+                        image_name = ""
+                elif type(child) is bpy.types.ShaderNodeMix:  # blender >= 3.4
+                    if child.data_type == 'RGBA':
+                        uvOne = child.inputs[6].links[0].from_node
+                        uvTwo = child.inputs[7].links[0].from_node if child.inputs[7].is_linked else None
+                    if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
+                        image_name = os.path.basename(uvOne.image.filepath)
+                    elif type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
+                        image_name = os.path.basename(uvTwo.image.filepath)
+                    else:
+                        image_name = ""
             if image_name is not None:
                 return image_name
             else:
