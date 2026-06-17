@@ -109,19 +109,25 @@ class ANTARCTICA_PT_properties(Panel, stk_panel.PanelBase):
                         row.label(text="Backing image: " + col.image.name)
                     elif type(col) is bpy.types.ShaderNodeVertexColor:
                         row.label(text="Backing image: (vertex color)")
-                    elif type(col) in [bpy.types.ShaderNodeMixRGB, bpy.types.ShaderNodeMix]:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
+                    elif type(col) is bpy.types.ShaderNodeMixRGB:  # blender < 3.4
                         # Only the first image in a mix shader can be configured
                         try:
-                            if type(col) == bpy.types.ShaderNodeMix and col.data_type != 'RGBA':
-                                print(f"Mix node with data_type not 'RGBA', skipping RGBA extraction for {col.name}")
-                                row.label(text="Backing image: (none)")
+                            uvOne = col.inputs['Color1'].links[0].from_node
+                            if type(uvOne) is bpy.types.ShaderNodeTexImage:
+                                row.label(text="Backing image: " + uvOne.image.name)
                             else:
-                                color_socks = [s for s in col.inputs if s.type == 'RGBA']  # check socket
-                                uvOne = color_socks[0].links[0].from_node
-                                if type(uvOne) is bpy.types.ShaderNodeTexImage:
-                                    row.label(text="Backing image: " + uvOne.image.name)
-                                else:
-                                    row.label(text="Backing image: (none)")
+                                row.label(text="Backing image: (none)")
+                        except:
+                            row.label(text="Backing image: (none)")
+                    elif type(col) is bpy.types.ShaderNodeMix:  # blender >= 3.4
+                        # Only the first image in a mix shader can be configured
+                        try:
+                            if col.data_type == 'RGBA':
+                                uvOne = col.inputs[6].links[0].from_node
+                            if type(uvOne) is bpy.types.ShaderNodeTexImage:
+                                row.label(text="Backing image: " + uvOne.image.name)
+                            else:
+                                row.label(text="Backing image: (none)")
                         except IndexError:
                             row.label(text="Backing image: (none)")
                     else:
@@ -305,35 +311,55 @@ def writeMaterialsFile(self, sPath):
                 for inp in root.inputs:
                     # Only certain inputs will be used from the shader, not all of them
                     # Managing colors / 3D
-                    if (type(inp) is bpy.types.NodeSocketColor or type(inp) is bpy.types.NodeSocketVector) and \
+                    if type(inp) is bpy.types.NodeSocketColor or type(inp) is bpy.types.NodeSocketVector and \
                     inp.name in used_inputs:
                         if inp.is_linked:
                             # Get the connected node
                             child = inp.links[0].from_node
                             if type(child) is bpy.types.ShaderNodeTexImage:
                                 sImage = child.image
-                            elif type(child) in [bpy.types.ShaderNodeMixRGB, bpy.types.ShaderNodeMix]:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
-                                if type(child) == bpy.types.ShaderNodeMix and child.data_type != 'RGBA':
-                                    print(f"Mix node with data_type not 'RGBA', skipping RGBA extraction for {child.name}")
-                                else:
-                                    color_socks = [s for s in child.inputs if s.type == 'RGBA']  # check socket
-                                    uvOne = color_socks[0].links[0].from_node if color_socks[0].is_linked else None
-                                    uvTwo = color_socks[1].links[0].from_node if len(color_socks) > 1 and color_socks[1].is_linked else None
-                                    if type(uvOne) is bpy.types.ShaderNodeTexImage:
-                                        sImage = uvOne.image
-                                    # Use image specified in node tree only if not already specified
-                                    # Switch shader to 'decal' only if not already specified
-                                    if type(uvTwo) is bpy.types.ShaderNodeTexImage:
-                                        hasTwoUVs = True
-                                        if "uv-two-tex" in paramLine:
-                                            re.sub("uv-two-tex=\".*\"", "uv-two-tex=\"" + bpy.path.basename(uvTwo.image.filepath) + "\"", paramLine)
-                                        else:
-                                            paramLine += " uv-two-tex=\"" + bpy.path.basename(uvTwo.image.filepath) + "\""
+                            elif type(child) is bpy.types.ShaderNodeMixRGB: # blender < 3.4
+                                uvOne = child.inputs['Color1'].links[0].from_node
+                                uvTwo = child.inputs['Color2'].links[0].from_node if child.inputs['Color2'].is_linked else None
+                                if type(uvOne) is bpy.types.ShaderNodeTexImage:
+                                    sImage = uvOne.image
+                                # Use image specified in node tree only if not already specified
+                                # Switch shader to 'decal' only if not already specified
+                                if type(uvTwo) is bpy.types.ShaderNodeTexImage:
+                                    hasTwoUVs = True
+                                    if "uv-two-tex" in paramLine:
+                                        re.sub("uv-two-tex=\".*\"",
+                                               "uv-two-tex=\"" + bpy.path.basename(uvTwo.image.filepath) + "\"",
+                                               paramLine)
+                                    else:
+                                        paramLine += " uv-two-tex=\"" + bpy.path.basename(uvTwo.image.filepath) + "\""
 
-                                        if "shader" in paramLine:
-                                            re.sub("shader=\".*\"", "shader=\"decal\"", paramLine)
-                                        else:
-                                            paramLine += " shader=\"decal\""
+                                    if "shader" in paramLine:
+                                        re.sub("shader=\".*\"", "shader=\"decal\"", paramLine)
+                                    else:
+                                        paramLine += " shader=\"decal\""
+                            elif type(child) is bpy.types.ShaderNodeMix:  # blender >= 3.4
+                                if child.data_type == 'RGBA':
+                                    uvOne = child.inputs[6].links[0].from_node
+                                    uvTwo = child.inputs[7].links[0].from_node if child.inputs[7].is_linked else None
+                                if type(uvOne) is bpy.types.ShaderNodeTexImage:
+                                    sImage = uvOne.image
+                                # Use image specified in node tree only if not already specified
+                                # Switch shader to 'decal' only if not already specified
+                                if type(uvTwo) is bpy.types.ShaderNodeTexImage:
+                                    hasTwoUVs = True
+                                    if "uv-two-tex" in paramLine:
+                                        re.sub("uv-two-tex=\".*\"",
+                                               "uv-two-tex=\"" + bpy.path.basename(uvTwo.image.filepath) + "\"",
+                                               paramLine)
+                                    else:
+                                        paramLine += " uv-two-tex=\"" + bpy.path.basename(
+                                            uvTwo.image.filepath) + "\""
+
+                                    if "shader" in paramLine:
+                                        re.sub("shader=\".*\"", "shader=\"decal\"", paramLine)
+                                    else:
+                                        paramLine += " shader=\"decal\""
                             elif type(child) is bpy.types.ShaderNodeNormalMap:
                                 try:
                                     nmColor = child.inputs['Color'].links[0].from_node
