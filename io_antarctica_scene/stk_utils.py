@@ -217,18 +217,25 @@ def searchNodeTreeForImage(node_tree, uv_num):
                 child = shader_node.inputs['Base Color'].links[0].from_node
                 if type(child) is bpy.types.ShaderNodeTexImage and uv_num == 1:
                     image_name = os.path.basename(bpy.path.abspath(child.image.filepath))
-                elif type(child) in [bpy.types.ShaderNodeMixRGB, bpy.types.ShaderNodeMix]:  # ['blender < 3.4', 'blender >= 3.4'] API node rename
-                    if type(child) == bpy.types.ShaderNodeMix and child.data_type != 'RGBA':
-                        return image_name
+                elif type(child) is bpy.types.ShaderNodeMixRGB:  # blender < 3.4
+                    uvOne = child.links['Color1'].from_node
+                    uvTwo = child.links['Color2'].from_node if child.links['Color2'].is_linked else None
+                    if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
+                        image_name = os.path.basename(uvOne.image.filepath)
+                    if type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
+                        image_name = os.path.basename(uvTwo.image.filepath)
                     else:
-                        color_socks = [s for s in child.links if s.type == 'RGBA']  # check socket
-                        if color_socks:
-                            uvOne = color_socks[0].from_node
-                            uvTwo = color_socks[1].from_node
-                        if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
-                            image_name = os.path.basename(uvOne.image.filepath)
-                        if type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
-                            image_name = os.path.basename(uvTwo.image.filepath)
+                        image_name = ""
+                elif type(child) is bpy.types.ShaderNodeMix:  # blender >= 3.4
+                    if child.data_type == 'RGBA':
+                        uvOne = child.links[6].from_node
+                        uvTwo = child.links[7].from_node if child.links[7].is_linked else None
+                    if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
+                        image_name = os.path.basename(uvOne.image.filepath)
+                    if type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
+                        image_name = os.path.basename(uvTwo.image.filepath)
+                    else:
+                        image_name = ""
             if image_name is not None:
                 return image_name
             else:
