@@ -431,6 +431,8 @@ class LibraryNodeExporter:
         for obj in self.m_objects:
             if obj.parent and obj.parent.type == 'ARMATURE':
                 filter_m_object.append([obj.parent, obj.name])
+            elif not obj.children and obj.type == 'ARMATURE':
+                new_m_object.append([obj, obj.name])
             else: filter_m_object.append([obj, obj.name])
         pprint.pprint(filter_m_object)
         # Filter object library for check armature animation object
@@ -446,7 +448,6 @@ class LibraryNodeExporter:
                     lib_name = ""
                 if child_name.startswith(lib_name):
                     new_m_object.append([parent, child_name])
-                    # Sinon, ignorer (c'est un IK target, etc.)
             else:
                 new_m_object.append([parent, child_name])
 
