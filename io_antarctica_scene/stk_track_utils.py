@@ -467,9 +467,17 @@ class LibraryNodeExporter:
                 if len(if_condition) > 0:
                     f.write(' if=\"%s\"' % if_condition)
                 f.write('>\n') # Close the library XML start tag
-                anim_data = stk_utils.get_fcurves(obj.animation_data)
+
+                # check if mesh or armature have animation
+                anim_src = obj
+                if obj.name != obj_name:
+                    mesh = bpy.data.objects.get(obj_name)
+                    if mesh and mesh.animation_data is not None:
+                        anim_src = mesh
+
+                anim_data = stk_utils.get_fcurves(anim_src.animation_data)
                 if anim_data:
-                    stk_track.writeIPO(self, f, obj.animation_data)
+                    stk_track.writeIPO(self, f, anim_src.animation_data)
                 f.write('  </library>\n')
             except:
                 self.log.report({'ERROR'}, "Invalid linked object <" + stk_utils.getObjectProperty(obj, "name", obj.name) + "> ")
