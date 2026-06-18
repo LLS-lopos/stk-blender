@@ -484,6 +484,8 @@ class LibraryNodeExporter:
         for obj in self.m_objects:
             if obj.parent and obj.parent.type == 'ARMATURE':
                 filter_m_object.append([obj.parent, obj.name])
+            elif not obj.children and obj.type == 'ARMATURE':
+                new_m_object.append([obj, obj.name])
             else: filter_m_object.append([obj, obj.name])
         pprint.pprint(filter_m_object)
         # Filter object library for check armature animation object
@@ -499,7 +501,6 @@ class LibraryNodeExporter:
                     lib_name = ""
                 if child_name.startswith(lib_name):
                     new_m_object.append([parent, child_name])
-                    # Sinon, ignorer (c'est un IK target, etc.)
             else:
                 new_m_object.append([parent, child_name])
 
@@ -522,9 +523,17 @@ class LibraryNodeExporter:
                 if len(if_condition) > 0:
                     f.write(' if=\"%s\"' % if_condition)
                 f.write('>\n') # Close the library XML start tag
-                anim_data = stk_utils.get_fcurves(obj.animation_data)
+
+                # check if mesh or armature have animation
+                anim_src = obj
+                if obj.name != obj_name:
+                    mesh = bpy.data.objects.get(obj_name)
+                    if mesh and mesh.animation_data is not None:
+                        anim_src = mesh
+
+                anim_data = stk_utils.get_fcurves(anim_src.animation_data)
                 if anim_data:
-                    stk_track.writeIPO(self, f, obj.animation_data)
+                    stk_track.writeIPO(self, f, anim_src.animation_data)
                 f.write('  </library>\n')
             except:
                 traceback.print_exc()
