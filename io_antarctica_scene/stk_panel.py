@@ -644,4 +644,72 @@ class STK_FolderTexturePicker_Operator(bpy.types.Operator):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
 
+
+# ==== QUICK HEADER OPERATOR ====
+class STK_Marker_Kart(bpy.types.Operator):
+    bl_idname = "screen.stk_marker_anim_kart"
+    bl_label = "Add all marker in the timeline for animation kart"
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene
+
+    def execute(self, context):
+        context.scene.frame_start = 0
+        context.scene.frame_end = 1100
+        marquer = {
+            "frame": [
+                [0, "left"],
+                [10, "straight"],
+                [20, "right"],
+                [25, "backpedal-left"],
+                [35, "backpedal"],
+                [45, "backpedal-right"],
+                [50, "jump-start"],
+                [65, "jump-loop-start"],
+                [80, "jump-loop-end"],
+                [85, "winning-start"],
+                [145, "winning-loop-start"],
+                [235, "winning-loop-end"],
+                [295, "winning-to-straight"],
+                [310, "losing-start"],
+                [380, "losing-loop-start"],
+                [490, "losing-loop-end"],
+                [570, "losing-to-straight"],
+                [580, "selection-loop-start"],
+                [800, "selection-loop-end"],
+                [805, "neutral-start"],
+                [845, "neutral-loop-start"],
+                [895, "neutral-loop-end"],
+                [900, "podium-start"],
+                [940, "podium-loop-start"],
+                [980, "podium-loop-end"],
+                [985, "bump-front"],
+                [995, "bump-left"],
+                [1005, "bump-right"],
+                [1015, "bump-back"],
+                [1025, "bump-end"],
+                [1030, "happy-start"],
+                [1045, "happy-end"],
+                [1050, "hit-start"],
+                [1065, "hit-end"],
+                [1070, "false-accel-start"],
+                [1090, "false-accel-end"],
+            ],
+        }
+        try:
+            bpy.ops.marker.select_all(action='SELECT')
+            bpy.ops.marker.delete(confirm=True)
+            bpy.ops.marker.select_all(action='DESELECT')
+        except: pass
+        for i in marquer["frame"]:
+            context.scene.frame_current = i[0]
+            bpy.ops.marker.add()
+            bpy.ops.marker.rename(name=i[1])
+        context.scene.frame_current = marquer["frame"][1][0]
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return self.execute(context)
+
 # TODO: refactoring FolderPicker Operator

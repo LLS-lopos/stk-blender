@@ -82,10 +82,15 @@ def menu_func_export_stk_track(self, context):
 def menu_func_add_stk_object(self, context):
     self.layout.operator_menu_enum("scene.stk_add_object", property="value", text="STK", icon='AUTO')
 
-# Defin custom STK shader submenu in Shader Editor
-def add_stk_shader_editor_menu(self, context):
-    if context.area.ui_type == 'ShaderNodeTree':
-        self.layout.menu(stk_shader.STKshaderMenu.bl_idname)
+# Add Marker in Timeline
+def menu_func_add_stk_marker(self, context):
+    if ("is_stk_kart" in context.scene and context.scene["is_stk_kart"] == "true"):
+        if bpy.app.version < (4, 0, 0):
+            self.layout.operator('screen.stk_marker_anim_kart', text='STK Marker', icon_value=505, emboss=True, depress=False)
+        elif bpy.app.version < (5, 0, 0):
+            self.layout.operator('screen.stk_marker_anim_kart', text='STK Marker', icon_value=530, emboss=True, depress=False)
+        else:
+            self.layout.operator('screen.stk_marker_anim_kart', text='STK Marker', icon_value=543, emboss=True, depress=False)
 
 classes = (
     stk_panel.STK_TypeUnset,
@@ -99,6 +104,7 @@ classes = (
     stk_panel.STK_FolderPicker_Operator,
     stk_panel.STK_FolderTexturePicker_Operator,
     stk_panel.STK_PT_Quick_Export_Panel,
+    stk_panel.STK_Marker_Kart,
     stk_material.ANTARCTICA_PT_properties,
     stk_material.STK_Material_Export_Operator,
     stk_kart.STK_Kart_Export_Operator,
@@ -125,8 +131,11 @@ def register():
     bpy.types.VIEW3D_HT_tool_header.append(header_func_export_stk_kart)
     bpy.types.VIEW3D_HT_tool_header.append(header_func_export_stk_track)
 
-    # Add submenu add in shader editor
-    bpy.types.NODE_MT_add.append(add_stk_shader_editor_menu)
+    # Add button in timeline menu
+    if bpy.app.version < (5, 0, 0):
+        bpy.types.TIME_MT_editor_menus.append(menu_func_add_stk_marker)
+    else:
+        bpy.types.DOPESHEET_MT_editor_menus.append(menu_func_add_stk_marker)
 
 def unregister():
     # Unregister export buttons from 3D View header menu
@@ -141,8 +150,11 @@ def unregister():
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export_stk_kart)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export_stk_track)
 
-    # Unregister submenu add in shader editor
-    bpy.types.NODE_MT_add.remove(add_stk_shader_editor_menu)
+    # Unregister button in timeline menu
+    if bpy.app.version < (5, 0, 0):
+        bpy.types.TIME_MT_editor_menus.remove(menu_func_add_stk_marker)
+    else:
+        bpy.types.DOPESHEET_MT_editor_menus.remove(menu_func_add_stk_marker)
 
     from bpy.utils import unregister_class
     for cls in classes:
