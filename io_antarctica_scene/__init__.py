@@ -76,7 +76,12 @@ def menu_func_add_stk_object(self, context):
 # Add Marker in Timeline
 def menu_func_add_stk_marker(self, context):
     if ("is_stk_kart" in context.scene and context.scene["is_stk_kart"] == "true"):
-        self.layout.operator('screen.stk_marker_anim_kart', text='STK Marker', icon_value=505, emboss=True, depress=False)
+        if bpy.app.version < (4, 0, 0):
+            self.layout.operator('screen.stk_marker_anim_kart', text='STK Marker', icon_value=505, emboss=True, depress=False)
+        elif bpy.app.version < (5, 0, 0):
+            self.layout.operator('screen.stk_marker_anim_kart', text='STK Marker', icon_value=530, emboss=True, depress=False)
+        else:
+            self.layout.operator('screen.stk_marker_anim_kart', text='STK Marker', icon_value=543, emboss=True, depress=False)
 
 classes = (
     stk_panel.STK_TypeUnset,
@@ -115,7 +120,10 @@ def register():
     bpy.types.VIEW3D_HT_tool_header.append(header_func_export_stk_track)
 
     # Add button in timeline menu
-    bpy.types.TIME_MT_editor_menus.append(menu_func_add_stk_marker)
+    if bpy.app.version < (5, 0, 0):
+        bpy.types.TIME_MT_editor_menus.append(menu_func_add_stk_marker)
+    else:
+        bpy.types.DOPESHEET_MT_editor_menus.append(menu_func_add_stk_marker)
 
 def unregister():
 	# Unregister export buttons from 3D View header menu
@@ -131,7 +139,10 @@ def unregister():
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export_stk_track)
 
     # Unregister button in timeline menu
-    bpy.types.TIME_MT_editor_menus.remove(menu_func_add_stk_marker)
+    if bpy.app.version < (5, 0, 0):
+        bpy.types.TIME_MT_editor_menus.remove(menu_func_add_stk_marker)
+    else:
+        bpy.types.DOPESHEET_MT_editor_menus.remove(menu_func_add_stk_marker)
 
     from bpy.utils import unregister_class
     for cls in classes:
