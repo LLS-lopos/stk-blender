@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "io_scene_spm"
-version = "2.0.0"
+version = "2.0.1"
 name = "SPM (Space partitioned mesh) format"
 tagline = "Import-Export SPM format objects of SuperTuxKart"
 maintainer = "Richard Qian, LLS, Alayan"
@@ -24,8 +24,7 @@ blender_version_min = "4.2.0"
 license = ['SPDX:GPL-3.0-or-later']
 # # Optional: required by some licenses.
 copyright = [
-   "2009-2025 SuperTuxKart-Team",
-   "Dev Benau",
+   "2009-2026 SuperTuxKart-Team, Dev Benau",
 ]
 
 [permissions]

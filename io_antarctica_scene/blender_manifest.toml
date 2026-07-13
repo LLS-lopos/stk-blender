@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "io_antarctica_scene"
-version = "4.0.0"
+version = "4.1.0"
 name = "SuperTuxKart Exporter Tools"
 tagline = "Export items to SuperTuxKart (karts/tracks/materials)"
 maintainer = "Richard Qian, LLS, Alayan"
@@ -24,10 +24,7 @@ blender_version_min = "4.2.0"
 license = ['SPDX:GPL-3.0-or-later']
 # # Optional: required by some licenses.
 copyright = [
-   "2009-2025 SuperTuxKart-Team",
-   "Dev Jean-Manuel Clemencon",
-   "Dev Joerg Henrichs",
-   "Dev Marianne Gagnon",
+   "2009-2026 SuperTuxKart-Team, Dev Jean-Manuel Clemencon, Dev Joerg Henrichs, Dev Marianne Gagnon",
 ]
 
 [permissions]
