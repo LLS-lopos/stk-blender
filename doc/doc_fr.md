@@ -9,10 +9,15 @@
 ---
 |Node|catégorie|image|description|
 |:---:|:---:|:---:|:---:|
-|Init|operator|![](./IMG/init_01.jpeg)| est le point de départ de l'arbre de nœud|
-|CLI|operator|![](./IMG/CLI_01.jpeg)| est un nœuds qui s'utilise comme un terminal|
-|Go Run Test|operator|![](./IMG/running_01.jpeg)|est le nœud qui exécute l'arbre de nœud (commande terminal)|
-|Preview CMD|debug|![](./IMG/preview_01.jpeg)|est un nœud de prévisualisation de commande|
+|Init|operator|![](./IMG/init_01.jpeg)| le point de départ de l'arbre de nœud|
+|CLI|operator|![](./IMG/CLI_01.jpeg)| un nœuds qui s'utilise comme un terminal|
+|Go Run Test|operator|![](./IMG/running_01.jpeg)|le nœud qui exécute l'arbre de nœud (commande terminal)|
+|Preview CMD|debug|![](./IMG/preview_01.jpeg)|le nœud de prévisualisation de commande|
+|Direct Run|operator|![](./IMG/Drun_01.jpg)|un nœud qui active le lancement direct des piste sans passer par le menu et aussi en désactivant le décompte au démarrage|
+|Racing|mode|![](./IMG/Racing_01.jpg)|le nœuds de test de piste de course|
+|Battle|mode|![](./IMG/Battle_01.jpg)|le nœud de test de piste de bataille|
+|Soccer|mode|![](./IMG/Soccer_01.jpg)|le nœud de test de piste de Football|
+|Demo|mode|![](./IMG/DEMO_01.jpg)|le nœud qui lance le mode démo (course)|
 ---
 
 ## Nœud Init
@@ -53,7 +58,7 @@ est le seul nœud réellement obligatoire car c'est lui qui lance l'excution de 
 
 ![](./IMG/running_02.jpeg)
 
-il se place toujours à la fin de l'arbre de nœud
+il se place toujours à la fin de l'arbre de nœud, il peut aussi être utilisez seul et contenir la commande complète sans utilisez d'autre nœuds.
 
 ## Nœuds Preview CMD
 
@@ -64,6 +69,55 @@ il peut afficher de longue commande sur plusieur ligne
 ![](./IMG/preview_02.jpeg)
 ![](./IMG/preview_03.jpeg)
 ![](./IMG/preview_04.jpeg)
+
+## Nœuds Direct Run
+
+Lancer directement votre piste
+
+![](./IMG/Drun_01.jpg)
+
+- **Race Now** : démarre directement la piste dans le mode choisi sans le décompte de départ
+- **No Start Screen** : démarre directement la piste dans le mode choisi
+
+## Nœuds Racing
+Lance le jeu en mode Course (à utilisez avec le nœuds *Direct Run*)
+
+![](./IMG/Racing_01.jpg)
+
+- **Reverse Track** :  lancer la piste en sens inverse
+- **N_karts** :  nombre de kart présent
+- **N_laps** :  nombre de tours
+- **Track Choice** :  la piste à lancer
+- **Kart User** :  le kart de l'utilisateur
+
+## Nœuds Battle
+Lance le jeu en mode Bataille (à utilisez avec le nœuds *Direct Run*)
+
+![](./IMG/Battle_01.jpg)
+
+- **N_karts** :  nombre de kart présent
+- **Track Choice** :  la piste à lancer
+- **Kart User** :  le kart de l'utilisateur
+
+## Nœuds Soccer
+Lance le jeu en mode Football (à utilisez avec le nœuds *Direct Run*)
+
+![](./IMG/Soccer_01.jpg)
+
+- **N_karts** :  nombre de kart présent
+- **Track Choice** :  la piste à lancer
+- **Kart User** :  le kart de l'utilisateur
+- **time limite(s)** :  le temps de jeu en seconde
+
+## Nœuds Demo
+Lance le mode démo au menu de démarrage 
+
+![](./IMG/DEMO_01.jpg)
+
+- **start** : temps en seconde avant le lancement du mode démo
+- **track** : est une liste de piste qui sera jouer en mode dans l'ordre dans lequel il sera écrit ex(minigolf,hacienda) tous dois etre collé écrit en une fois
+- **laps** : nombre de tours
+- **Karts** : nombre de kart (bot)
 
 ### Les nœuds peuvent être associé les un au autre sans problème
 
