@@ -13,7 +13,7 @@ class STK_racing(node):
     num_kart: bpy.props.IntProperty(
         name="N_karts",
         default=3,
-        min=0,
+        min=1,
         max=20,
         update=lambda self, context: self.update())
 
@@ -47,7 +47,9 @@ class STK_racing(node):
     def draw_buttons(self, context, layout):
         ligne = layout.row()
         ligne.prop(self, "reverse")
+        ligne = layout.row()
         ligne.prop(self, "num_kart")
+        ligne = layout.row()
         ligne.prop(self, "laps")
 
         ligne = layout.row()
