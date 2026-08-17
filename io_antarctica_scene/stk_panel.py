@@ -656,17 +656,17 @@ class STK_Marker_Kart(bpy.types.Operator):
 
     def execute(self, context):
         context.scene.frame_start = 0
-        context.scene.frame_end = 1100
+        context.scene.frame_end = 1300
         marquer = {
             "frame": [
                 [0, "left"],
                 [10, "straight"],
                 [20, "right"],
-                [25, "backpedal-left"],
-                [35, "backpedal"],
-                [45, "backpedal-right"],
-                [50, "jump-start"],
-                [65, "jump-loop-start"],
+                [22, "backpedal-left"],
+                [32, "backpedal"],
+                [42, "backpedal-right"],
+                [44, "jump-start"],
+                [54, "jump-loop-start"],
                 [80, "jump-loop-end"],
                 [85, "winning-start"],
                 [145, "winning-loop-start"],
@@ -683,18 +683,18 @@ class STK_Marker_Kart(bpy.types.Operator):
                 [895, "neutral-loop-end"],
                 [900, "podium-start"],
                 [940, "podium-loop-start"],
-                [980, "podium-loop-end"],
-                [985, "bump-front"],
-                [995, "bump-left"],
-                [1005, "bump-right"],
-                [1015, "bump-back"],
-                [1025, "bump-end"],
-                [1030, "happy-start"],
-                [1045, "happy-end"],
-                [1050, "hit-start"],
-                [1065, "hit-end"],
-                [1070, "false-accel-start"],
-                [1090, "false-accel-end"],
+                [1180, "podium-loop-end"],
+                [1185, "bump-front"],
+                [1195, "bump-left"],
+                [1205, "bump-right"],
+                [1215, "bump-back"],
+                [1225, "bump-end"],
+                [1230, "happy-start"],
+                [1245, "happy-end"],
+                [1250, "hit-start"],
+                [1265, "hit-end"],
+                [1270, "false-accel-start"],
+                [1300, "false-accel-end"],
             ],
         }
         try:
