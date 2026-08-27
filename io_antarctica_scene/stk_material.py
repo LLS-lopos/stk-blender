@@ -90,9 +90,17 @@ def get_root_shader(node_network):
 class ANTARCTICA_PT_properties(Panel, stk_panel.PanelBase):
     bl_idname = "ANTARCTICA_PT_properties"
     bl_label = stk_panel.STK_MATERIAL_PROPERTIES[0]
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'material'
+    bl_space_type = 'NODE_EDITOR'
+    bl_region_type = 'UI'
+    bl_context = 'scene'
+    bl_category = 'STK_material'
+
+    @classmethod
+    def poll(cls, context):
+        return not (bool(bpy.context.screen == 'IMAGE_EDITOR'))
+
+    def draw_header(self, context):
+        layout = self.layout
 
     def draw(self, context):
         layout = self.layout
