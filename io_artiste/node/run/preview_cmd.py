@@ -9,7 +9,7 @@ class STK_preview_cmd(node):
 
     # Property to store the value to display
     doc: bpy.props.StringProperty(name="Value", description="Value to display",
-        default="", update=lambda self, context: self.update())
+        default="")
 
     def init(self, context):
         # Create input socket
