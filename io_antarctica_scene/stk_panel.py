@@ -655,13 +655,13 @@ class STK_Marker_Kart(bpy.types.Operator):
         return context.scene
 
     def execute(self, context):
-        context.scene.frame_start = 1
-        context.scene.frame_end = 1280
+        context.scene.frame_start = 0
+        context.scene.frame_end = 1330
         marquer = {
             "frame": [
-                [1, "left"],
-                [11, "straight"],
-                [21, "right"],
+                [0, "left"],
+                [10, "straight"],
+                [20, "right"],
                 [25, "backpedal-left"],
                 [35, "backpedal"],
                 [45, "backpedal-right"],
@@ -683,16 +683,16 @@ class STK_Marker_Kart(bpy.types.Operator):
                 [905, "selection-start"],
                 [945, "selection-loop-start"],
                 [1110, "selection-loop-end"],
-                [1111, "bump-front"],
-                [1112, "bump-left"],
-                [1113, "bump-right"],
-                [1114, "bump-back"],
-                [1115, "happy-start"],
-                [1160, "happy-end"],
-                [1165, "hit-start"],
-                [1205, "hit-end"],
-                [1210, "false-accel-start"],
-                [1280, "false-accel-end"],
+                [1120, "bump-front"],
+                [1130, "bump-left"],
+                [1140, "bump-right"],
+                [1150, "bump-back"],
+                [1160, "happy-start"],
+                [1200, "happy-end"],
+                [1210, "hit-start"],
+                [1250, "hit-end"],
+                [1260, "false-accel-start"],
+                [1330, "false-accel-end"],
             ],
         }
         try:
