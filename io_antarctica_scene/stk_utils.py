@@ -187,6 +187,7 @@ def searchNodeTreeForImage(node_tree, uv_num):
     if node_tree is not None:
         try:
             image_name = ""
+            child = None
             shader_node = next((n for n in node_tree.nodes if n.type == 'BSDF_PRINCIPLED'), None)  # check node shader by type not by name
             if shader_node.inputs['Base Color'].is_linked:
                 # Get the connected node
@@ -204,7 +205,7 @@ def searchNodeTreeForImage(node_tree, uv_num):
                         image_name = ""
                 elif type(child) is bpy.types.ShaderNodeMix:  # blender >= 3.4
                     if child.data_type == 'RGBA':
-                        uvOne = child.links[6].from_node
+                        uvOne = child.links[6].from_node if child.links[6].is_linked else None
                         uvTwo = child.links[7].from_node if child.links[7].is_linked else None
                     if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
                         image_name = os.path.basename(uvOne.image.filepath)
