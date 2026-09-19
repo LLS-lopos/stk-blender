@@ -648,7 +648,7 @@ class STK_FolderTexturePicker_Operator(bpy.types.Operator):
 # ==== QUICK HEADER OPERATOR ====
 class STK_Marker_Kart(bpy.types.Operator):
     bl_idname = "screen.stk_marker_anim_kart"
-    bl_label = "Add all marker in the timeline for animation kart"
+    bl_label = "Add all the kart animation markers to the timeline"
 
     @classmethod
     def poll(cls, context):
