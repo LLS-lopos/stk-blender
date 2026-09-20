@@ -7,10 +7,6 @@ class STK_preview_cmd(node):
     bl_label = 'Preview CMD'
     bl_icon = 'INFO'
 
-    # Property to store the value to display
-    doc: bpy.props.StringProperty(name="Value", description="Value to display",
-        default="", update=lambda self, context: self.update())
-
     def init(self, context):
         # Create input socket
         self.node_input("NodeSocketString", "preview_input", "preview", "")
@@ -18,36 +14,14 @@ class STK_preview_cmd(node):
     def draw_buttons(self, context, layout):
         # Display the value in the interface
         box = layout.box()
-        formatted_text = self.format_text(self.doc)
+        formatted_text = self.format_text(self.s_input)
         for ligne in formatted_text.split('\n'):
             box.label(text=ligne)
 
     def process(self, context, id, path):
-        input_socket = self.inputs[0]
-
-        if input_socket.is_linked:
-            links = input_socket.links
-            if links:
-                from_socket = links[0].from_socket
-                from_node = links[0].from_node
-
-                # Try to get the value via the source node's process method first
-                if hasattr(from_node, "process"):
-                    try:
-                        value = from_node.process(context, id, path)
-                        self.doc = str(value)
-                        return self.doc
-                    except:
-                        pass
-
-                # If that fails, try to get the default_value
-                if hasattr(from_socket, "default_value"):
-                    self.doc = str(from_socket.default_value)
-                    return self.doc
-
-        # If no connection or retrieval fails, use the default value
-        self.doc = str(input_socket.default_value)
-        return self.doc
+        # Check for input socket linked status and retrieve the value
+        self.s_input = node.process(self, context, id, path)
+        return self.s_input
 
     def format_text(self, text):
         """Format the text by adding line breaks every 60 characters or 8 words."""

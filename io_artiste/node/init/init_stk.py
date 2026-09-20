@@ -9,8 +9,6 @@ class STK_initial(node):
     bl_icon = 'NONE'
 
     # Property to store the output list
-    s_output: bpy.props.StringProperty(name="output", default="")
-
     use_sudo: bpy.props.BoolProperty(name="Super User", description="Use super-user rights to launch STK",
                                      default=False, update=lambda self, context: self.update())
 
@@ -35,7 +33,7 @@ class STK_initial(node):
     disable_addon_karts: bpy.props.BoolProperty(name="Disable addon karts", description="", default=False,
                                                 update=lambda self, context: self.update())
 
-    version_project: bpy.props.BoolProperty(name="v(2.x or 1.x)", description="if checked choise for STK-Evolution else STK", default=False,
+    version_project: bpy.props.BoolProperty(name="I'm using Evolution", description="chosen if test used for STK-Evolution else STK", default=False,
                                                 update=lambda self, context: self.update())
     difficulty_v7: bpy.props.EnumProperty(
         name="Difficulty",
@@ -53,7 +51,7 @@ class STK_initial(node):
         name="Difficulty",
         items=[
             ("0", "Novice", "", "", 0),
-            ("1", "Casial", "", "", 1),
+            ("1", "Casual", "", "", 1),
             ("2", "Intermediate", "", "", 2),
             ("3", "Expert", "", "", 3),
             ("4", "Super Tux", "", "", 4),
@@ -103,9 +101,6 @@ class STK_initial(node):
             row.prop(self, "difficulty_v7")
 
     def process(self, context, id, path):
-        if context is None:
-            return
-
         # Update the output
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
             self.s_output = ""

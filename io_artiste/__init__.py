@@ -13,13 +13,11 @@ from .base import (node_base, menu, node_editor)
 from .node.debug import (direct_run)
 from .node.init import (cli, init_stk)
 from .node.run import (runner, preview_cmd)
-from .node.mode import (racing, battle, soccer, demo)
+from .node.mode import (demo, game_mode)
 
 classes = (
     node_editor.STKeditor,
-    menu.STKoperator,
-    menu.STKmode,
-    menu.STKdebug,
+    menu.STKmenu,
     node_base.node,
     init_stk.STK_initial,
     init_stk.STK_Pick_Executable_Operator,
@@ -29,20 +27,15 @@ classes = (
     runner.STK_run,
     runner.STK_OT_RunStk,
     preview_cmd.STK_preview_cmd,
-    racing.STK_racing,
-    battle.STK_battle,
-    soccer.STK_soccer,
     demo.STK_demo,
     direct_run.STK_direct_run,
+    game_mode.STK_game_mode,
 )
 
 def add_stk_node_menu(self, context):
     if context.space_data.tree_type != node_editor.STKeditor.bl_idname: return
-    self.layout.menu(menu.STKoperator.bl_idname)
-    self.layout.menu(menu.STKmode.bl_idname)
-    self.layout.menu(menu.STKdebug.bl_idname)
+    self.layout.menu(menu.STKmenu.bl_idname)
         
-
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
