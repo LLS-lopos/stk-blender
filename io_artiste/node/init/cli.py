@@ -19,31 +19,14 @@ class STK_cli(node):
         layout.prop(self, "cli")
 
     def process(self, context, id, path):
-        # Check for input socket existence
-        if len(self.inputs) > 0:
-            input_socket = self.inputs[0]
-            
-            if input_socket.is_linked:
-                links = input_socket.links
-                if links:
-                    from_socket = links[0].from_socket
-                    from_node = links[0].from_node
-                    
-                    # Try to get the value via the source node's process method first
-                    if hasattr(from_node, "process"):
-                        try:
-                            value = from_node.process(context, id, path)
-                            self.s_input = str(value)
-                        except: pass
-                    
-                    # If that fails, try to get the default_value
-                    if hasattr(from_socket, "default_value"):
-                        self.s_input = str(from_socket.default_value)
-            else:
-                self.s_input = ""
+        # Check for input socket linked status and retrieve the value
+        if self.inputs[0].is_linked:
+            self.s_input = str(self.inputs[0].links[0].from_socket.default_value)
+        else:
+            self.s_input = ""
         
         # Build the complete instruction with the input and properties
-        if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"):
+        if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"): 
             self.s_output = ""
             if self.s_input != "":
                 # Add a space if the input doesn't end with one
@@ -56,5 +39,4 @@ class STK_cli(node):
         return self.s_output
 
     def update(self):
-        """Called when the node needs to be updated"""
         self.process(bpy.context, None, None)

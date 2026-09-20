@@ -29,33 +29,15 @@ class STK_run(node):
         layout.operator('runner.run_stk', text="Run STK", icon='PLAY').node_id = self.name
 
     def process(self, context, id, path):
-        input_socket = self.inputs[0]
-        
-        if input_socket.is_linked:
-            links = input_socket.links
-            if links:
-                from_socket = links[0].from_socket
-                from_node = links[0].from_node
-                
-                # Try to get the value via the source node's process method first
-                if hasattr(from_node, "process"):
-                    try:
-                        value = from_node.process(context, id, path)
-                        self.doc = str(value)
-                        return self.doc
-                    except: pass
-                
-                # If that fails, try to get the default_value
-                if hasattr(from_socket, "default_value"):
-                    self.doc = str(from_socket.default_value)
-                    return self.doc
-        
-        # If no connection, use the default value
-        self.doc = str(input_socket.default_value)
+        # Check for input socket linked status and retrieve the value
+        if self.inputs[0].is_linked:
+            self.doc = str(self.inputs[0].links[0].from_socket.default_value)
+        else:
+            self.doc = str(self.inputs[0].links[0].from_socket.default_value)
+            
         return self.doc
 
     def update(self):
-        """Called when the node needs to be updated"""
         self.process(bpy.context, None, None)
 
 
