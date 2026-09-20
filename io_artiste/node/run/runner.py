@@ -33,7 +33,7 @@ class STK_run(node):
         if self.inputs[0].is_linked:
             self.doc = str(self.inputs[0].links[0].from_socket.default_value)
         else:
-            self.doc = str(self.inputs[0].links[0].from_socket.default_value)
+            self.doc = ""
             
         return self.doc
 
