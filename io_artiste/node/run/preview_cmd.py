@@ -7,10 +7,6 @@ class STK_preview_cmd(node):
     bl_label = 'Preview CMD'
     bl_icon = 'INFO'
 
-    # Property to store the value to display
-    doc: bpy.props.StringProperty(name="Value", description="Value to display",
-        default="")
-
     def init(self, context):
         # Create input socket
         self.node_input("NodeSocketString", "preview_input", "preview", "")
@@ -18,18 +14,14 @@ class STK_preview_cmd(node):
     def draw_buttons(self, context, layout):
         # Display the value in the interface
         box = layout.box()
-        formatted_text = self.format_text(self.doc)
+        formatted_text = self.format_text(self.s_input)
         for ligne in formatted_text.split('\n'):
             box.label(text=ligne)
 
     def process(self, context, id, path):
         # Check for input socket linked status and retrieve the value
-        if self.inputs[0].is_linked:
-            self.doc = str(self.inputs[0].links[0].from_socket.default_value)
-        else:
-            self.doc = ""
-
-        return self.doc
+        self.s_input = node.process(self, context, id, path)
+        return self.s_input
 
     def format_text(self, text):
         """Format the text by adding line breaks every 60 characters or 8 words."""

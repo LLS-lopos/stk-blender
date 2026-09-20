@@ -7,7 +7,6 @@ class STK_run(node):
     bl_icon = 'NONE'
 
     # Property to store the value to display
-    doc: bpy.props.StringProperty(name="Value", default="")
     run_or_popen: bpy.props.EnumProperty(
         name="Run or Popen",
         description="Run command for testing from Blender or Popen for independent execution from Blender",
@@ -30,12 +29,8 @@ class STK_run(node):
 
     def process(self, context, id, path):
         # Check for input socket linked status and retrieve the value
-        if self.inputs[0].is_linked:
-            self.doc = str(self.inputs[0].links[0].from_socket.default_value)
-        else:
-            self.doc = ""
-            
-        return self.doc
+        self.s_input = node.process(self, context, id, path)
+        return self.s_input
 
     def update(self):
         self.process(bpy.context, None, None)

@@ -9,8 +9,6 @@ class STK_initial(node):
     bl_icon = 'NONE'
 
     # Property to store the output list
-    s_output: bpy.props.StringProperty(name="output", default="")
-
     use_sudo: bpy.props.BoolProperty(name="Super User", description="Use super-user rights to launch STK",
                                      default=False, update=lambda self, context: self.update())
 

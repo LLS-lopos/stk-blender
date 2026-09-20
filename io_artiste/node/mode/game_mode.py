@@ -8,9 +8,6 @@ class STK_game_mode(node):
     bl_label = 'Game Mode'
     bl_icon = 'NONE'
 
-    s_input: bpy.props.StringProperty(name="input", default="")
-    s_output: bpy.props.StringProperty(name="output", default="")
-
     mode_actif: bpy.props.StringProperty(name="mode_actif", default="")
     race_actif: bpy.props.StringProperty(name="race_actif", default="hacienda")
     battle_actif: bpy.props.StringProperty(name="battle_actif", default="stadium")
@@ -77,10 +74,7 @@ class STK_game_mode(node):
         
     def process(self, context, id, path):
         # Check for input socket linked status and retrieve the value
-        if self.inputs[0].is_linked:
-            self.s_input = str(self.inputs[0].links[0].from_socket.default_value)
-        else:
-            self.s_input = ""
+        self.s_input = node.process(self, context, id, path)
 
         if self.mode_actif != self.chosen_mode:
             self.mode_actif = self.chosen_mode

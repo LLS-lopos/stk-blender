@@ -8,9 +8,6 @@ class STK_demo(node):
     bl_label = 'Demo'
     bl_icon = 'NONE'
 
-    s_input: bpy.props.StringProperty(name="input", default="")
-    s_output: bpy.props.StringProperty(name="output", default="")
-
     times: bpy.props.IntProperty(name="start", default=60, min=1, update=lambda self, context: self.update())
     tracks: bpy.props.StringProperty(name="track", default="hacienda", update=lambda self, context: self.update())
     laps: bpy.props.IntProperty(name="laps", default=3, min=1, update=lambda self, context: self.update())
@@ -28,10 +25,7 @@ class STK_demo(node):
 
     def process(self, context, id, path):
         # Check for input socket linked status and retrieve the value
-        if self.inputs[0].is_linked:
-            self.s_input = str(self.inputs[0].links[0].from_socket.default_value)
-        else:
-            self.s_input = ""
+        self.s_input = node.process(self, context, id, path)
 
         # Build the complete instruction with the input and properties
         if len(self.outputs) > 0 and hasattr(self.outputs[0], "default_value"): 
