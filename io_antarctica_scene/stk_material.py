@@ -130,6 +130,7 @@ class ANTARCTICA_PT_properties(Panel, stk_panel.PanelBase):
                     elif type(col) is bpy.types.ShaderNodeMix:  # blender >= 3.4
                         # Only the first image in a mix shader can be configured
                         try:
+                            uvOne = None
                             if col.data_type == 'RGBA':
                                 uvOne = col.inputs[6].links[0].from_node
                             if type(uvOne) is bpy.types.ShaderNodeTexImage:
@@ -319,7 +320,7 @@ def writeMaterialsFile(self, sPath):
                 for inp in root.inputs:
                     # Only certain inputs will be used from the shader, not all of them
                     # Managing colors / 3D
-                    if type(inp) is bpy.types.NodeSocketColor or type(inp) is bpy.types.NodeSocketVector and \
+                    if (type(inp) is bpy.types.NodeSocketColor or type(inp) is bpy.types.NodeSocketVector) and \
                     inp.name in used_inputs:
                         if inp.is_linked:
                             # Get the connected node
@@ -347,8 +348,9 @@ def writeMaterialsFile(self, sPath):
                                     else:
                                         paramLine += " shader=\"decal\""
                             elif type(child) is bpy.types.ShaderNodeMix:  # blender >= 3.4
+                                uvOne = uvTwo = None
                                 if child.data_type == 'RGBA':
-                                    uvOne = child.inputs[6].links[0].from_node
+                                    uvOne = child.inputs[6].links[0].from_node if child.inputs[6].is_linked else None
                                     uvTwo = child.inputs[7].links[0].from_node if child.inputs[7].is_linked else None
                                 if type(uvOne) is bpy.types.ShaderNodeTexImage:
                                     sImage = uvOne.image
