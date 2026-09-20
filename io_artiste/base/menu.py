@@ -1,6 +1,6 @@
 import bpy
-from ..node.debug import (direct_run)
-from ..node.init import (cli, init_stk)
+from ..node.debug import (direct_run, controller, graphic_d, kart, track)
+from ..node.init import (cli, init_stk, windows, demo_info, graphic)
 from ..node.run import (runner, preview_cmd)
 from ..node.mode import (demo, game_mode)
 
@@ -28,11 +28,6 @@ class STKmenu(bpy.types.Menu):
         layout.label(text="Mode")
         layout.operator("node.add_node", text=demo.STK_demo.bl_label).type = demo.STK_demo.bl_idname
         layout.operator("node.add_node", text=game_mode.STK_game_mode.bl_label).type = game_mode.STK_game_mode.bl_idname
-        layout.separator()
-        layout.operator("node.add_node", text=battle.STK_battle.bl_label).type = battle.STK_battle.bl_idname
-        layout.operator("node.add_node", text=racing.STK_racing.bl_label).type = racing.STK_racing.bl_idname
-        layout.operator("node.add_node", text=soccer.STK_soccer.bl_label).type = soccer.STK_soccer.bl_idname
-            
 
 class STKdebug(bpy.types.Menu):
     bl_idname = 'NODE_MT_STK_debug'

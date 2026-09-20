@@ -10,16 +10,11 @@ bl_info = {
 
 import bpy
 from .base import (node_base, menu, node_editor)
-from .node.debug import (direct_run)
-from .node.init import (cli, init_stk)
-from .node.run import (runner)
 from .geo_node import (stk_geo_node)
 from .node.run import (runner, preview_cmd)
-from .node.mode import (demo, game_mode)
-from .node.mode import (racing, battle, soccer, demo)
-from .node.mode import (racing, leader, time_trial, battle, capture_flag, cutscene, egg_party, soccer)
-from .node.debug import (direct_run, controller, graphic_d, kart, track)
-from .node.init import (cli, init_stk, demo_info, graphic, windows)
+from .node.mode import (leader, time_trial, capture_flag, cutscene, egg_party, demo, game_mode)
+from .node.debug import (direct_run, controller, graphic_d, kart)
+from .node.init import (cli, init_stk, graphic, windows)
 
 classes = (
     node_editor.STKeditor,
