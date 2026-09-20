@@ -33,7 +33,7 @@ class STK_initial(node):
     disable_addon_karts: bpy.props.BoolProperty(name="Disable addon karts", description="", default=False,
                                                 update=lambda self, context: self.update())
 
-    version_project: bpy.props.BoolProperty(name="I'm using Evolution", description="if checked choise for STK-Evolution else STK", default=False,
+    version_project: bpy.props.BoolProperty(name="I'm using Evolution", description="chosen if test used for STK-Evolution else STK", default=False,
                                                 update=lambda self, context: self.update())
     difficulty_v7: bpy.props.EnumProperty(
         name="Difficulty",
