@@ -1331,6 +1331,8 @@ class STK_Track_Export_Operator(bpy.types.Operator):
 
         isNotATrack = ('is_stk_track' not in context.scene) or (context.scene['is_stk_track'] != 'true')
         isNotANode = ('is_stk_node' not in context.scene) or (context.scene['is_stk_node'] != 'true')
+        isNotATrack = ('is_stk_track' not in context.scene) or (context.scene['is_stk_track'] != 'true')
+        isNotANode = ('is_stk_node' not in context.scene) or (context.scene['is_stk_node'] != 'true')
 
         if self.filepath == "" or (isNotATrack and isNotANode):
             return {'FINISHED'}

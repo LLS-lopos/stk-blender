@@ -46,12 +46,8 @@ if "bpy" in locals():
         importlib.reload(stk_kart)
     if "stk_track" in locals():
         importlib.reload(stk_track)
-    if "stk_shader" in locals():
-        importlib.reload(stk_shader)
-    if "stk_node_shader" in locals():
-        importlib.reload(stk_node_shader)
 else:
-    from . import stk_utils, stk_panel, stk_material, stk_kart, stk_track, stk_shader, stk_node_shader
+    from . import stk_utils, stk_panel, stk_material, stk_kart, stk_track
 
 import bpy
 
@@ -109,10 +105,7 @@ classes = (
     stk_material.STK_Material_Export_Operator,
     stk_kart.STK_Kart_Export_Operator,
     stk_track.STK_Track_Export_Operator,
-    stk_shader.STKshaderMenu,
-    stk_node_shader.ShaderStkSolid,
 )
-
 
 def register():
     from bpy.utils import register_class
@@ -159,8 +152,6 @@ def unregister():
     from bpy.utils import unregister_class
     for cls in classes:
         unregister_class(cls)
-
-    stk_shader.free_solid_group()
 
 if __name__ == "__main__":
     register()
