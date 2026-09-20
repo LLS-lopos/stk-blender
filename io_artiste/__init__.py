@@ -12,6 +12,8 @@ import bpy
 from .base import (node_base, menu, node_editor)
 from .node.debug import (direct_run)
 from .node.init import (cli, init_stk)
+from .node.run import (runner)
+from .geo_node import (stk_geo_node)
 from .node.run import (runner, preview_cmd)
 from .node.mode import (demo, game_mode)
 
@@ -26,6 +28,10 @@ classes = (
     cli.STK_cli,
     runner.STK_run,
     runner.STK_OT_RunStk,
+    stk_geo_node.STKNodeMenu,
+    stk_geo_node.STKparticles,
+    stk_geo_node.ListePoint,
+    stk_geo_node.CheckActif,
     preview_cmd.STK_preview_cmd,
     demo.STK_demo,
     direct_run.STK_direct_run,
@@ -34,6 +40,15 @@ classes = (
 
 def add_stk_node_menu(self, context):
     if context.space_data.tree_type != node_editor.STKeditor.bl_idname: return
+    self.layout.menu(menu.STKoperator.bl_idname)
+    self.layout.menu(menu.STKmode.bl_idname)
+    self.layout.menu(menu.STKdebug.bl_idname)
+
+# Define custom STK geometry node
+def menu_stk_geo_node(self, context):
+    self.layout.menu(stk_geo_node.STKNodeMenu.bl_idname, text="SuperTuxKart", icon='AUTO')
+
+
     self.layout.menu(menu.STKmenu.bl_idname)
         
 def register():
@@ -41,9 +56,11 @@ def register():
         bpy.utils.register_class(cls)
     bpy.types.NODE_MT_add.append(add_stk_node_menu)
     bpy.app.handlers.depsgraph_update_post.append(node_editor.STKeditor.update_scene_handler)
+    bpy.types.NODE_MT_geometry_node_add_all.append(menu_stk_geo_node)
 
 def unregister():
     bpy.types.NODE_MT_add.remove(add_stk_node_menu)
+    bpy.types.NODE_MT_geometry_node_add_all.remove(menu_stk_geo_node)
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
     bpy.app.handlers.depsgraph_update_post.remove(node_editor.STKeditor.update_scene_handler)
