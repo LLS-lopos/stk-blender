@@ -47,9 +47,9 @@ class STK_OT_RunStk(bpy.types.Operator):
         tree = context.space_data.edit_tree  # Get the active node
         if tree:  # Find the node corresponding to the ID
             for node in tree.nodes:
-                if node.name == self.node_id and hasattr(node, "doc"):
+                if node.name == self.node_id and hasattr(node, "s_input"):
                     # Node found: print its name and ID
-                    command.append(node.doc)
+                    command.append(node.s_input)
                     if node.run_or_popen == "popen":
                         try:
                             # Create a new process group
