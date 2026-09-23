@@ -198,9 +198,9 @@ def searchNodeTreeForImage(node_tree, uv_num):
                     uvOne = child.links['Color1'].from_node
                     uvTwo = child.links['Color2'].from_node if child.links['Color2'].is_linked else None
                     if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
-                        image_name = os.path.basename(uvOne.image.filepath)
+                        image_name = bpy.path.basename(uvOne.image.filepath)
                     if type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
-                        image_name = os.path.basename(uvTwo.image.filepath)
+                        image_name = bpy.path.basename(uvTwo.image.filepath)
                     else:
                         image_name = ""
                 elif type(child) is bpy.types.ShaderNodeMix:  # blender >= 3.4
@@ -208,9 +208,9 @@ def searchNodeTreeForImage(node_tree, uv_num):
                         uvOne = child.links[6].from_node if child.links[6].is_linked else None
                         uvTwo = child.links[7].from_node if child.links[7].is_linked else None
                     if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
-                        image_name = os.path.basename(uvOne.image.filepath)
+                        image_name = bpy.path.basename(uvOne.image.filepath)
                     if type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
-                        image_name = os.path.basename(uvTwo.image.filepath)
+                        image_name = bpy.path.basename(uvTwo.image.filepath)
                     else:
                         image_name = ""
             if image_name is not None:

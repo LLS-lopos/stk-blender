@@ -454,9 +454,9 @@ def searchMaterialForImage(material, uv_num):
                     uvOne = child.inputs['Color1'].links[0].from_node
                     uvTwo = child.inputs['Color2'].links[0].from_node if child.inputs['Color2'].is_linked else None
                     if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
-                        image_name = os.path.basename(uvOne.image.filepath)
+                        image_name = bpy.path.basename(uvOne.image.filepath)
                     elif type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
-                        image_name = os.path.basename(uvTwo.image.filepath)
+                        image_name = bpy.path.basename(uvTwo.image.filepath)
                     else:
                         image_name = ""
                 elif type(child) is bpy.types.ShaderNodeMix:  # blender >= 3.4
@@ -464,9 +464,9 @@ def searchMaterialForImage(material, uv_num):
                         uvOne = child.inputs[6].links[0].from_node if child.inputs[6].is_linked else None
                         uvTwo = child.inputs[7].links[0].from_node if child.inputs[7].is_linked else None
                     if type(uvOne) is bpy.types.ShaderNodeTexImage and uv_num == 1:
-                        image_name = os.path.basename(uvOne.image.filepath)
+                        image_name = bpy.path.basename(uvOne.image.filepath)
                     elif type(uvTwo) is bpy.types.ShaderNodeTexImage and uv_num == 2:
-                        image_name = os.path.basename(uvTwo.image.filepath)
+                        image_name = bpy.path.basename(uvTwo.image.filepath)
                     else:
                         image_name = ""
  
