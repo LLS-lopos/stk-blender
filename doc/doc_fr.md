@@ -53,6 +53,7 @@ Peuvent être utilsez à la suite pour un visuel plus agréable
 ## Nœuds Go Run Test
 
 est le seul nœud réellement obligatoire car c'est lui qui lance l'excution de la commande construit avec l'arbre de nœud
+- **export project** : active l'opérateur d'exportation de piste avant de lancer un test
 - **Run** : lance la commande à partir de Blender (bloc l'interface utilisateur de Blender)
 - **Popen** : lance la commande indépendament de Blender (ne bloc pas l'interface utilisateur de Blender)
 

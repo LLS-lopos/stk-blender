@@ -53,6 +53,7 @@ Can be chained together for a cleaner visual layout.
 ## Go Run Test Nodes
 
 Is the only truly mandatory node since it launches the execution of the command built with the node tree.
+- **export project** : activate export track operator before running test
 - **Run** : launches the command from Blender (blocks the Blender user interface).
 - **Popen** : launches the command independently of Blender (does not block the Blender user interface).
 
